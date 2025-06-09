@@ -1,0 +1,14 @@
+#Tamaños
+WIDTH, HEIGHT = 800, 600
+PLAYER = 40
+GRASS = 64
+TREE = 64
+SMALL_STONE = 25
+
+#Colores
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+BLACK = (0, 0, 0)
+BROWN = (63, 63, 63)
