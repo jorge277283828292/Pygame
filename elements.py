@@ -2,31 +2,51 @@ import pygame
 import constants
 import os
 
-class Tree:
-    def __init__(self, x, y):
+class GameElement:
+    def __init__(self, x, y, image_path, size):
         self.x = x
         self.y = y
+        self.image = pygame.image.load(image_path).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (size, size))
+        self.size = self.image.get_width()
+
+    def draw(self, screen):
+        screen.blit(self.image, (self.x, self.y))
+
+class Tree(GameElement):
+    def __init__(self, x, y):
+        tree_path = os.path.join('assets', 'images', 'objects', 'tree.png')
+        super().__init__(x, y, tree_path, constants.TREE)
         self.wood = 5
 
-        tree_path = os.path.join('assets', 'images', 'objects', 'tree.png')
-        self.image = pygame.image.load(tree_path).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (constants.TREE, constants.TREE))
-        self.size = self.image.get_width()
+    def chop(self):
+        if self.wood > 0:
+            self.wood -= 1
+            return True
+        return False
 
-
-    def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
-
-class SmallStone:
+class SmallStone(GameElement):
     def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.stone = 1
+        stone_path = os.path.join('assets', 'images', 'objects', 'stone.png')
+        super().__init__(x, y, stone_path, constants.SMALL_STONE)
+        self.stone = 10
 
-        tree_path = os.path.join('assets', 'images', 'objects', 'stone.png')
-        self.image = pygame.image.load(tree_path).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (constants.SMALL_STONE, constants.SMALL_STONE))
-        self.size = self.image.get_width()
+class Flower(GameElement):
+    def __init__(self, x, y):
+        flower_path = os.path.join('assets', 'images', 'objects', 'flowers.png')
+        super().__init__(x, y, flower_path, constants.FLOWER)
 
-    def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+class Rose(GameElement):
+    def __init__(self, x, y):
+        rose_path = os.path.join('assets', 'images', 'objects', 'rose.png')
+        super().__init__(x, y, rose_path, constants.FLOWER)
+
+class RoseYellow(GameElement):
+    def __init__(self, x, y):
+        rose_path = os.path.join('assets', 'images', 'objects', 'rose-yellow.png')
+        super().__init__(x, y, rose_path, constants.FLOWER)
+
+class House(GameElement):
+    def __init__(self, x, y):
+        house_path = os.path.join('assets', 'images', 'objects', 'house.png')
+        super().__init__(x, y, house_path, constants.HOUSE)
