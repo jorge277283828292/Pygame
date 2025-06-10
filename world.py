@@ -1,7 +1,7 @@
 import random
 import pygame
 import constants
-from elements import Tree, SmallStone, Flower, Rose, RoseYellow, House
+from elements import Tree, SmallStone, Flower, Rose, RoseYellow, House, Grass1, Grass2, Grass3
 import os
 
 class World:
@@ -18,7 +18,10 @@ class World:
         self.flowers = (
             [Flower(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(15)] +
             [Rose(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(5)] +
-            [RoseYellow(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(5)]
+            [RoseYellow(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(5)] +
+            [Grass1(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(10)] +
+            [Grass2(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(10)] +
+            [Grass3(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(10)]
         )
         
         self.house = [House(

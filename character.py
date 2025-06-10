@@ -57,7 +57,9 @@ class Character:
     
         for stone in world.small_stones:
             if self.is_near(stone):
-                   self.inventory["stone"] += stone.stone
-                   world.small_stones.remove(stone)
-                   return
+                if stone.mine():
+                    self.inventory["stone"] += 1
+                if stone.stone == 0:
+                    world.small_stones.remove(stone)
+                return
 

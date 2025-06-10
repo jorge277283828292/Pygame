@@ -31,6 +31,12 @@ class SmallStone(GameElement):
         super().__init__(x, y, stone_path, constants.SMALL_STONE)
         self.stone = 10
 
+    def mine(self):
+        if self.stone > 0:
+            self.stone -= 1
+            return True
+        return False
+
 class Flower(GameElement):
     def __init__(self, x, y):
         flower_path = os.path.join('assets', 'images', 'objects', 'flowers.png')
@@ -50,3 +56,18 @@ class House(GameElement):
     def __init__(self, x, y):
         house_path = os.path.join('assets', 'images', 'objects', 'house.png')
         super().__init__(x, y, house_path, constants.HOUSE)
+
+class Grass1(GameElement):
+    def __init__(self, x, y):
+        grass_path = os.path.join('assets', 'images', 'objects', 'grass1.png')
+        super().__init__(x, y, grass_path, constants.GRASS_OBJ)
+
+class Grass2(GameElement):
+    def __init__(self, x, y):
+        grass_path = os.path.join('assets', 'images', 'objects', 'grass2.png')
+        super().__init__(x, y, grass_path, constants.GRASS_OBJ)
+
+class Grass3(GameElement):
+    def __init__(self, x, y):
+        grass_path = os.path.join('assets', 'images', 'objects', 'grass3.png')
+        super().__init__(x, y, grass_path, constants.GRASS_OBJ)
