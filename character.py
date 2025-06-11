@@ -1,16 +1,37 @@
 import pygame
 import constants
 import os
+import elements
+from elements import Flower, Rose, RoseYellow
 
 class Character:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.inventory = {"wood" : 0, "stone": 0}
+        self.inventory = {"wood" : 0, 
+                          "stone": 0,
+                          "flower": 0,
+                          "rose": 0,
+                          "rose_yellow": 0
+                          }
+        
         image_path = os.path.join("assets", "images", "character", "Imagen1.png")
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (constants.PLAYER, constants.PLAYER))
         self.size = self.image.get_width()
+
+        self.item_images = {
+            "wood": self.load_item_images("wood.png"),
+            "stone": self.load_item_images("stone.png"),
+            "flower": self.load_item_images("flowers.png"), 
+            "rose": self.load_item_images("rose.png"),
+            "rose_yellow": self.load_item_images("rose-yellow.png")
+        }
+
+    def load_item_images(self, filename):
+        path = os.path.join("assets", "images", "objects", filename)
+        image = pygame.image.load(path).convert_alpha()
+        return pygame.transform.scale(image, (24, 24))
 
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
@@ -47,6 +68,8 @@ class Character:
         )
     
     def interact(self, world):
+
+        #Trees
         for tree in world.trees:
             if self.is_near(tree):
                 if tree.chop():
@@ -54,7 +77,7 @@ class Character:
                     if tree.wood == 0:
                         world.trees.remove(tree)
                     return
-    
+        #Stones
         for stone in world.small_stones:
             if self.is_near(stone):
                 if stone.mine():
@@ -62,4 +85,47 @@ class Character:
                 if stone.stone == 0:
                     world.small_stones.remove(stone)
                 return
+        
+        #Flowers
+        for flower in world.flowers:
+            if self.is_near(flower):
+                if isinstance(flower, Flower):
+                    if flower.collect():
+                        self.inventory["flower"] += 1
+                    if flower.flower == 0:
+                        world.flowers.remove(flower)
+                    return
+                elif isinstance(flower, Rose):
+                    if flower.collect():
+                        self.inventory["rose"] += 1
+                    if flower.rose == 0:
+                        world.flowers.remove(flower)
+                    return
+                elif isinstance(flower, RoseYellow):
+                    if flower.collect():
+                        self.inventory["rose_yellow"] += 1
+                    if flower.rose_yellow == 0:
+                        world.flowers.remove(flower)
+                    return
+            
+    def draw_inventory(self, screen):
+        background = pygame.Surface((constants.WIDTH, constants.HEIGHT), pygame.SRCALPHA)
+        background.fill((0, 0, 0, 128))
+        screen.blit(background, (0, 0))  # Fondo semitransparente
 
+        font = pygame.font.Font(None, 36)
+        title = font.render("Inventory", True, constants.WHITE) 
+        screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 20))
+
+        item_font = pygame.font.Font(None, 24)
+        y_offset = 80
+        for item, quantity in self.inventory.items():
+            if quantity > 0:
+                screen.blit(self.item_images[item], (constants.WIDTH // 2 - 60, y_offset))
+                text = item_font.render(f"{item.capitalize()}: {quantity}", True, constants.WHITE)
+                screen.blit(text, (constants.WIDTH // 2 - 20, y_offset + 10)) 
+                y_offset += 40
+        
+        close_text = font.render("Press 'E' to close inventory", True, constants.WHITE)
+
+        screen.blit(close_text, (constants.WIDTH // 2 - close_text.get_width() // 2, constants.HEIGHT - 40))

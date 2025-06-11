@@ -10,7 +10,7 @@ class World:
         self.height = height
 
         self.trees = [Tree(random.randint(0, width-constants.TREE),
-                           random.randint(0, height-constants.TREE)) for _ in range(10)]
+                           random.randint(0, height-constants.TREE)) for _ in range(20)]
         
         self.small_stones = [SmallStone(random.randint(0, width - constants.SMALL_STONE),
                            random.randint(0, height - constants.SMALL_STONE)) for _ in range(20)]
@@ -19,9 +19,9 @@ class World:
             [Flower(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(15)] +
             [Rose(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(5)] +
             [RoseYellow(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(5)] +
-            [Grass1(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(10)] +
-            [Grass2(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(10)] +
-            [Grass3(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(10)]
+            [Grass1(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(20)] +
+            [Grass2(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(20)] +
+            [Grass3(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(20)]
         )
         
         self.house = [House(
@@ -51,10 +51,7 @@ class World:
         for house in self.house:
             house.draw(screen)
 
-    def draw_inventory(self, screen, character):
-        font = pygame.font.Font(None, 36)
-        wood_text = font.render(f"Wood: {character.inventory['wood']}", True, constants.WHITE) 
-        stone_text = font.render(f"Stone: {character.inventory.get('stone', 0)}", True, constants.WHITE)
-
-        screen.blit(wood_text, (10, 10))
-        screen.blit(stone_text, (10, 50))
+    def draw_inventory(self, screen):
+        font = pygame.font.Font(None, 20)
+        inventory_text = font.render("Press 'E' to open inventory", True, constants.WHITE)
+        screen.blit(inventory_text, (10, 10))

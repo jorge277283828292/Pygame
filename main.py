@@ -13,6 +13,7 @@ def main():
     clock = pygame.time.Clock()
     world = World(constants.WIDTH, constants.HEIGHT)
     character = Character(constants.WIDTH // 2, constants.HEIGHT // 2)
+    show_inventory = False
 
     while True:
         for event in pygame.event.get():
@@ -22,26 +23,31 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Botón izquierdo del ratón
                     character.interact(world)
-                # Si quieres usar el botón derecho, descomenta la siguiente línea:
-                # if event.button == 3:
-                #     pass
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    show_inventory = not show_inventory
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             character.move(dx=-5, dy=0, world=world)
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             character.move(dx=5, dy=0, world=world)
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
             character.move(dx=0, dy=-5, world=world)
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             character.move(dx=0, dy=5, world=world)
 
         world.draw(screen)
         character.draw(screen)
-        world.draw_inventory(screen, character)
+        if show_inventory:
+            character.draw_inventory(screen)
+        else:
+            world.draw_inventory(screen)
 
         pygame.display.flip()
         clock.tick(60)
 
 if __name__ == '__main__':
     main()
+
+
