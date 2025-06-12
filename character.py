@@ -1,7 +1,6 @@
 import pygame
 import constants
 import os
-import elements
 from elements import Flower, Rose, RoseYellow
 
 class Character:
@@ -27,6 +26,10 @@ class Character:
             "rose": self.load_item_images("rose.png"),
             "rose_yellow": self.load_item_images("rose-yellow.png")
         }
+        
+        self.energy = constants.MAX_ENERGY
+        self.food = constants.MAX_FOOD
+        self.thirst = constants.MAX_THIRST
 
     def load_item_images(self, filename):
         path = os.path.join("assets", "images", "objects", filename)
@@ -35,6 +38,7 @@ class Character:
 
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
+        self.draw_status_bars(screen)
 
     def move(self, dx, dy, world):
         new_x = self.x + dx
@@ -48,6 +52,9 @@ class Character:
         self.y = new_y
         self.x = max(0, min(self.x, constants.WIDTH - self.size))
         self.y = max(0, min(self.y, constants.HEIGHT - self.size))
+
+        #Whhen he moves, he loses energy
+        self.update_energy(-0.1)
 
     def check_collision(self, x, y, obj):
         shrink = 0.25  # Reduce el área de colisión en un 25%
@@ -128,4 +135,42 @@ class Character:
         
         close_text = font.render("Press 'E' to close inventory", True, constants.WHITE)
 
-        screen.blit(close_text, (constants.WIDTH // 2 - close_text.get_width() // 2, constants.HEIGHT - 40))
+        screen.blit(close_text, (constants.WIDTH // 2 - close_text.get_width() // 2, constants.HEIGHT - 40))    
+
+    def update_energy(self, amount):
+        self.energy = max(0, min(self.energy + amount, constants.MAX_ENERGY))
+
+    def update_food(self, amount):
+        self.food = max(0, min(self.food + amount, constants.MAX_FOOD))
+    
+    def update_thirst(self, amount):
+        self.thirst = max(0, min(self.thirst + amount, constants.MAX_THIRST))
+
+    def draw_status_bars(self, screen):
+        bar_width = 100
+        bar_height = 10
+        x_offset = 10
+        y_offset = 10
+
+        # ENERGY BAR
+        pygame.draw.rect(screen, constants.BAR_BACKGROUND_COLOR, (x_offset, y_offset, bar_width, bar_height))
+        pygame.draw.rect(screen, constants.ENERGY_COLOR, (x_offset, y_offset, bar_width * (self.energy / constants.MAX_ENERGY), bar_height))
+        y_offset += bar_height + 5
+
+        # THIRST BAR
+        pygame.draw.rect(screen, constants.BAR_BACKGROUND_COLOR, (x_offset, y_offset, bar_width, bar_height))
+        pygame.draw.rect(screen, constants.THIRST_COLOR, (x_offset, y_offset, bar_width * (self.thirst / constants.MAX_THIRST), bar_height))
+        y_offset += bar_height + 5
+
+        # FOOD BAR
+        pygame.draw.rect(screen, constants.BAR_BACKGROUND_COLOR, (x_offset, y_offset, bar_width, bar_height))
+        pygame.draw.rect(screen, constants.FOOD_COLOR, (x_offset, y_offset, bar_width * (self.food / constants.MAX_FOOD), bar_height))
+
+    def update_status(self):
+        self.update_energy(-0.01)  # Reduce energía con el tiempo
+        self.update_food(-0.02)
+
+        if self.food < constants.MAX_FOOD * 0.2 or self.thirst < constants.MAX_THIRST * 0.2:
+            self.update_energy(-0.05)	
+        else:
+            self.update_energy(0.01)
