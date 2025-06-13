@@ -169,6 +169,7 @@ class Character:
     def update_status(self):
         self.update_energy(-0.01)  # Reduce energía con el tiempo
         self.update_food(-0.02)
+        self.update_thirst(-0.02)
 
         if self.food < constants.MAX_FOOD * 0.2 or self.thirst < constants.MAX_THIRST * 0.2:
             self.update_energy(-0.05)	

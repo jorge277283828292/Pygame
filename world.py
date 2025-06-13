@@ -3,6 +3,7 @@ import pygame
 import constants
 from elements import Tree, SmallStone, Flower, Rose, RoseYellow, House, Grass1, Grass2, Grass3
 import os
+from pygame import Surface
 
 class World:
     def __init__(self, width, height):
@@ -25,14 +26,57 @@ class World:
         )
         
         self.house = [House(
-        self.width - constants.HOUSE,                # posición x: borde derecho menos el ancho de la casa
-        self.height // 2 - constants.HOUSE // 2      # posición y: centro vertical
-    )
-]
+            self.width - constants.HOUSE,                # posición x: borde derecho menos el ancho de la casa
+            self.height // 2 - constants.HOUSE // 2      # posición y: centro vertical
+        )]
         
         grass_path = os.path.join('assets', 'images', 'objects', 'grass.png')
         self.grass_image = pygame.image.load(grass_path).convert()
         self.grass_rect = pygame.transform.scale(self.grass_image, (constants.GRASS, constants.GRASS))
+
+        #Day and Night Cycle
+        self.current_time = constants.MORNING_TIME
+        self.day_overlay = Surface((width, height))
+        self.day_overlay.fill(constants.DAY_COLOR)
+        self.day_overlay.set_alpha(0)
+
+    def update_time(self, dt):
+        self.current_time = (self.current_time + dt) % constants.DAY_LENGTH
+        hour = (self.current_time / constants.DAY_LENGTH) * 24
+
+        # Amanecer suave (6:00 a 6:30)
+        if 6 <= hour < 6.5:
+            progress = (hour - 6) / 0.5
+            dawn_color = (255, 220, 120)
+            day_color = constants.DAY_COLOR
+            r = int(dawn_color[0] + (day_color[0] - dawn_color[0]) * progress)
+            g = int(dawn_color[1] + (day_color[1] - dawn_color[1]) * progress)
+            b = int(dawn_color[2] + (day_color[2] - dawn_color[2]) * progress)
+            self.day_overlay.fill((r, g, b))
+            alpha = int(100 * (1 - progress))
+            self.day_overlay.set_alpha(alpha)
+
+        # Día normal
+        elif 6.5 <= hour < constants.NIGHT_START:
+            self.day_overlay.fill(constants.DAY_COLOR)
+            self.day_overlay.set_alpha(0)
+
+        # Atardecer/noche suave (18:00 a 20:00)
+        elif constants.NIGHT_START <= hour < constants.NIGHT_END:
+            progress = (hour - constants.NIGHT_START) / (constants.NIGHT_END - constants.NIGHT_START)
+            day_color = constants.DAY_COLOR
+            night_color = constants.NIGHT_COLOR
+            r = int(day_color[0] + (night_color[0] - day_color[0]) * progress)
+            g = int(day_color[1] + (night_color[1] - day_color[1]) * progress)
+            b = int(day_color[2] + (night_color[2] - day_color[2]) * progress)
+            self.day_overlay.fill((r, g, b))
+            alpha = int(constants.MAX_NIGHT_ALPHA * progress)
+            self.day_overlay.set_alpha(alpha)
+
+        # Noche completa
+        else:
+            self.day_overlay.fill(constants.NIGHT_COLOR)
+            self.day_overlay.set_alpha(constants.MAX_NIGHT_ALPHA)
 
     def draw(self, screen):
         for y in range(0, self.height, constants.GRASS):
@@ -50,6 +94,9 @@ class World:
 
         for house in self.house:
             house.draw(screen)
+
+        # Draw the day overlay
+        screen.blit(self.day_overlay, (0, 0))
 
     def draw_inventory(self, screen):
         font = pygame.font.Font(None, 20)

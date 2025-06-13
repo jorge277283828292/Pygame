@@ -45,10 +45,14 @@ def main():
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             character.move(dx=0, dy=5, world=world)
 
+        # Update the world time
+        world.update_time(dt)
+
         status_update_timer += dt
         if status_update_timer >= constants.STATUS_UPDATE_INTERVAL:
             character.update_energy(-0.1)
-            character.update_food(-0.05)    
+            character.update_food(-0.05) 
+            character.update_thirst(-0.1)   
             status_update_timer = 0
 
         if character.energy <= 0 or character.food <= 0 or character.thirst <= 0:
@@ -65,11 +69,21 @@ def main():
         energy_text = font.render(f"Energy: {int(character.energy)}", True, constants.WHITE)
         food_text = font.render(f"Food: {int(character.food)}", True, constants.WHITE)
         thirst_text = font.render(f"Thirst: {int(character.thirst)}", True, constants.WHITE)
-        screen.blit(energy_text, (10, constants.HEIGHT - 70))
-        screen.blit(food_text, (10, constants.HEIGHT - 45))
-        screen.blit(thirst_text, (10, constants.HEIGHT - 20))
+        time_of_day = (world.current_time / constants.DAY_LENGTH) * 24
+        time_text = font.render(f"Time: {int(time_of_day):02d}:00", True, constants.WHITE)
+
+        screen.blit(energy_text, (10, constants.HEIGHT - 90))
+        screen.blit(food_text, (10, constants.HEIGHT - 65))
+        screen.blit(thirst_text, (10, constants.HEIGHT - 40))
+        screen.blit(time_text, (10, constants.HEIGHT - 15))
 
         pygame.display.flip()
+
+class Surface:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.day_overlay = pygame.Surface((width, height))
 
 if __name__ == '__main__':
     main()
