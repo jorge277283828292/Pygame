@@ -1,4 +1,5 @@
 #SIZES
+#Tamaños
 WIDTH, HEIGHT = 800, 600
 PLAYER = 40
 GRASS = 64
@@ -7,31 +8,33 @@ SMALL_STONE = 20
 FLOWER = 18 
 HOUSE = 150
 GRASS_OBJ = 15
+SCUARES = 6
 
 #COLORS
+#Colores
 WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
 RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-BLACK = (0, 0, 0)
-BROWN = (63, 63, 63)
 
 #STATES
+#Estados máximos
 MAX_ENERGY = 100
 MAX_FOOD = 100
 MAX_THIRST = 100
 
 #COLORS STATES
+#Colores de las barras de estado
 ENERGY_COLOR = (255, 255, 0)  # Yellow
 FOOD_COLOR = (255, 165, 0)  # Orange
 THIRST_COLOR = (0, 191, 255)  # Blue
 BAR_BACKGROUND_COLOR = (100, 100, 100)  # Dark gray
 
 #INTERVAL OF TIME
+#Intervalo de actualización de estado
 STATUS_UPDATE_INTERVAL = 1000
 
 #SISTEM DAY/NIGHT
-DAY_LENGTH = 48000
+#Sistema de día/noche
+DAY_LENGTH = 30 * 24000
 DAWN_TIME = 12000
 MORNING_TIME = 8000
 DUSK_TIME = 24000
@@ -39,11 +42,11 @@ MIDNIGHT_TIME = 24000
 MAX_DARKNESS = 180
 
 #ILUMINATION COLORS
+#Colores de iluminación
 NIGHT_COLOR = (20, 50, 50)
 DAY_COLOR = (255, 255, 255)
 DAWN_DUSK_COLOR = (255, 193, 137)
 
-NIGHT_START = 18    # 18:00 (6 PM)
-NIGHT_END = 20      # 20:00 (8 PM)
-NIGHT_COLOR = (30, 30, 60)   # Azul oscuro para la noche
-MAX_NIGHT_ALPHA = 120        # Qué tan oscuro quieres la noche (ajusta a gusto)
+NIGHT_START = 18    
+NIGHT_END = 20     
+MAX_NIGHT_ALPHA = 120

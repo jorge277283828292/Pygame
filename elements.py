@@ -3,6 +3,7 @@ import constants
 import os
 
 #Master Class
+#Clase base para los elementos del juego
 class GameElement:
     def __init__(self, x, y, image_path, size):
         self.x = x
@@ -15,6 +16,7 @@ class GameElement:
         screen.blit(self.image, (self.x, self.y))
 
 #Tree
+#Árbol
 class Tree(GameElement):
     def __init__(self, x, y):
         tree_path = os.path.join('assets', 'images', 'objects', 'tree.png')
@@ -28,6 +30,7 @@ class Tree(GameElement):
         return False
 
 #Stones
+#Piedras pequeñas
 class SmallStone(GameElement):
     def __init__(self, x, y):
         stone_path = os.path.join('assets', 'images', 'objects', 'stone.png')
@@ -41,6 +44,7 @@ class SmallStone(GameElement):
         return False
     
 #Flower
+#Flor
 class Flower(GameElement):
     def __init__(self, x, y):
         flower_path = os.path.join('assets', 'images', 'objects', 'flowers.png')
@@ -54,6 +58,7 @@ class Flower(GameElement):
         return False
     
 #Rose
+#Rosa
 class Rose(GameElement):
     def __init__(self, x, y):
         rose_path = os.path.join('assets', 'images', 'objects', 'rose.png')
@@ -67,6 +72,7 @@ class Rose(GameElement):
         return False
     
 #Rose Yellow 
+#Rosa amarilla
 class RoseYellow(GameElement):
     def __init__(self, x, y):
         rose_path = os.path.join('assets', 'images', 'objects', 'rose-yellow.png')
@@ -79,25 +85,22 @@ class RoseYellow(GameElement):
             return True
         return False
 
-#House
-class House(GameElement):
-    def __init__(self, x, y):
-        house_path = os.path.join('assets', 'images', 'objects', 'house.png')
-        super().__init__(x, y, house_path, constants.HOUSE)
-
 #Grass
+#Pasto 1
 class Grass1(GameElement):
     def __init__(self, x, y):
         grass_path = os.path.join('assets', 'images', 'objects', 'grass1.png')
         super().__init__(x, y, grass_path, constants.GRASS_OBJ)
 
 #Grass
+#Pasto 2
 class Grass2(GameElement):
     def __init__(self, x, y):
         grass_path = os.path.join('assets', 'images', 'objects', 'grass2.png')
         super().__init__(x, y, grass_path, constants.GRASS_OBJ)
 
 #Grass
+#Pasto 3
 class Grass3(GameElement):
     def __init__(self, x, y):
         grass_path = os.path.join('assets', 'images', 'objects', 'grass3.png')
