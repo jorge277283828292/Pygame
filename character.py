@@ -86,11 +86,14 @@ class Character:
 
     #Draw the character on the screen
     #Dibuja el personaje en la pantalla
-    def draw(self, screen):
+    def draw(self, screen, camera_x, camera_y):
+        screen_x = self.x - camera_x
+        screen_y = self.y - camera_y
+
         current_frame = self.animations[self.current_state][self.animation_frame]
         if self.facing_left:
             current_frame = pygame.transform.flip(current_frame, True, False)
-        screen.blit(current_frame, (self.x, self.y))
+        screen.blit(current_frame, (screen_x, screen_y))
 
         self.draw_status_bars(screen)
 
@@ -131,8 +134,6 @@ class Character:
             
         self.x = new_x
         self.y = new_y
-        self.x = max(0, min(self.x, constants.WIDTH - constants.PLAYER))
-        self.y = max(0, min(self.y, constants.HEIGHT - constants.PLAYER ))
 
         self.update_animation()
 
@@ -270,11 +271,10 @@ class Character:
 # Update the character's status over time
 # Actualiza el estado del personaje con el tiempo
     def update_status(self):
-        self.update_energy(-0.01)
-        self.update_food(-0.1)
-        self.update_thirst(-0.1)
+        self.update_food(-constants.FOOD_DECREASE_RATE)
+        self.update_thirst(-constants.THIRST_DECREASE_RATE)
 
         if self.food < constants.MAX_FOOD * 0.2 or self.thirst < constants.MAX_THIRST * 0.2:
-            self.update_energy(-0.05)	
+            self.update_energy(-constants.ENERGY_DECREASE_RATE)	
         else:
-            self.update_energy(0.01)
+            self.update_energy(-constants.ENERGY_INCREASE_RATE)

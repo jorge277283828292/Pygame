@@ -12,8 +12,13 @@ class GameElement:
         self.image = pygame.transform.scale(self.image, (size, size))
         self.size = self.image.get_width()
 
-    def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+    def draw(self, screen, camera_x, camera_y):
+        screen_x = self.x - camera_x
+        screen_y = self.y - camera_y
+        # Solo dibuja si está en pantalla
+        if (screen_x + self.size >= 0 and screen_x <= constants.WIDTH and
+                screen_y + self.size >= 0 and screen_y <= constants.HEIGHT):
+            screen.blit(self.image, (screen_x, screen_y))
 
 #Tree
 #Árbol

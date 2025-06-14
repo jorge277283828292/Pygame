@@ -20,6 +20,8 @@ def main():
 
     status_update_timer = 0 
 
+    camera_x = 0
+    camera_y = 0
     # Create a surface for the day/night overlay
     while True:
         dt = clock.tick(60)
@@ -38,16 +40,24 @@ def main():
                 if event.key == pygame.K_t: 
                     character.update_thirst(20) #Update thirst(In the future, this will be replaced by a water item)
 
+        
         #Control the character movement
         keys = pygame.key.get_pressed()
+        dx = dy = 0
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            character.move(dx=-5, dy=0, world=world)
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            character.move(dx=5, dy=0, world=world)
-        if keys[pygame.K_UP] or keys[pygame.K_w]:
-            character.move(dx=0, dy=-5, world=world)
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            character.move(dx=0, dy=5, world=world)
+            dx=-5
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            dx=5
+        elif keys[pygame.K_UP] or keys[pygame.K_w]:
+            dy=-5
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            dy=5
+        character.move(dx, dy, world)
+
+        camera_x = character.x - constants.WIDTH // 2
+        camera_y = character.y - constants.HEIGHT // 2
+
+        world.update_chunks(character.x, character.y)
 
         # Update the world time
         world.update_time(dt)
@@ -65,8 +75,10 @@ def main():
             pygame.quit()
             sys.exit()
         
-        world.draw(screen)
-        character.draw(screen)
+        screen.fill((0, 0, 0))
+
+        world.draw(screen, camera_x, camera_y)
+        character.draw(screen, camera_x, camera_y)
         if show_inventory:
             character.draw_inventory(screen)
 
