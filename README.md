@@ -25,7 +25,6 @@ Este es un proyecto personal hecho con **Python** y **Pygame**, creado en **Visu
 - Sistema de **construcción** y crafting.
 - **Enemigos** o criaturas (tipo monstruos o animales salvajes).
 - Múltiples **niveles o biomas**.
-- Sistema de **salud, hambre y energía**.
 
 ## ▶️ Cómo correr el juego
 
