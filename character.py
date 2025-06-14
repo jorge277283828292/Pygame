@@ -2,7 +2,6 @@ import pygame
 import constants
 import os
 from constants import *
-from elements import Flower, Rose, RoseYellow
 
 class Character:
     #Inventory items
@@ -32,6 +31,7 @@ class Character:
         self.current_state = IDLE_DOWN
         self.moving = False
         self.facing_left = False
+        self.is_running = False
 
         #Load all animations
         #Carga todas las animaciones
@@ -52,6 +52,7 @@ class Character:
         self.energy = constants.MAX_ENERGY
         self.food = constants.MAX_FOOD
         self.thirst = constants.MAX_THIRST
+        self.stamina = constants.MAX_STAMINA
 
     #Load the animations by character
     #Carga las animaciones del personaje
@@ -75,7 +76,8 @@ class Character:
 
     def update_animation(self):
         current_time = pygame.time.get_ticks()
-        if current_time - self.animation_timer > self.animation_delay:
+        animation_speed = RUNNING if self.is_running else ANIMATION_DELAY
+        if current_time - self.animation_timer > animation_speed:
             self.animation_timer = current_time
             self.animation_frame = (self.animation_frame + 1) % 6
 
@@ -105,6 +107,9 @@ class Character:
         self.moving = dx != 0 or dy != 0
 
         if self.moving:
+            speed_multiplier = RUN_SPEED if self.is_running and self.stamina > 0 else WALK_SPEED
+            dx *= speed_multiplier / WALK_SPEED
+            dy *= speed_multiplier / WALK_SPEED
             if dy > 0:
                 self.current_state = WALK_DOWN
                 self.facing_left = False
@@ -141,7 +146,14 @@ class Character:
 
         #When he moves, he loses energy
         #Cuando se mueve, pierde energía
-        self.update_energy(-0.005)
+        if self.moving:
+            if self.is_running and self.stamina > 0:
+                self.update_stamina(-STAMINA_DECREASE_RATE)
+                self.update_energy(-MOVEMENT_ENERGY_COST * 2)
+            else:
+                self.update_energy(-MOVEMENT_ENERGY_COST)
+            if not self.moving:
+                self.update_stamina(STAMINA_INCREASE_RATE)
 
     #Check if the character collides with an object, reducing the collision area by 25%
     #Verifica si el personaje colisiona con un objeto, reduciendo el área de colisión en un 25%
@@ -255,6 +267,9 @@ class Character:
     def update_thirst(self, amount):
         self.thirst = max(0, min(self.thirst + amount, constants.MAX_THIRST))
 
+    def update_stamina(self, amount):
+        self.stamina = max(0, min(self.stamina +amount, constants.MAX_STAMINA))
+
     #Draw the status bars for energy, food, and thirst
     #Dibuja las barras de estado para energía, comida y sed
     def draw_status_bars(self, screen):
@@ -279,10 +294,19 @@ class Character:
         # Barra de comida
         pygame.draw.rect(screen, constants.BAR_BACKGROUND_COLOR, (x_offset, y_offset, bar_width, bar_height))
         pygame.draw.rect(screen, constants.FOOD_COLOR, (x_offset, y_offset, bar_width * (self.food / constants.MAX_FOOD), bar_height))
-
+        y_offset += bar_height + 5
+        # STAMINA BAR
+        # Barra de Stamina
+        pygame.draw.rect(screen, constants.BAR_BACKGROUND_COLOR, (x_offset, y_offset, bar_width, bar_height))
+        pygame.draw.rect(screen, constants.STAMINA_COLOR, (x_offset, y_offset, bar_width * (self.stamina / constants.MAX_STAMINA), bar_height))
+        y_offset += bar_height + 5
 # Update the character's status over time
 # Actualiza el estado del personaje con el tiempo
     def update_status(self):
+        food_rate = FOOD_DECREASE_RATE * (RUN_FOOD_DECREASE_MULTIPLER if self.is_running else 1)
+        thirst_rate = THIRST_DECREASE_RATE * (RUN_THIRST_DECREASE_MULTIPLER if self.is_running else 1)
+
+
         self.update_food(-constants.FOOD_DECREASE_RATE)
         self.update_thirst(-constants.THIRST_DECREASE_RATE)
 
@@ -290,3 +314,6 @@ class Character:
             self.update_energy(-constants.ENERGY_DECREASE_RATE)	
         else:
             self.update_energy(-constants.ENERGY_INCREASE_RATE)
+
+        if not self.is_running:
+            self.update_stamina(STAMINA_INCREASE_RATE)

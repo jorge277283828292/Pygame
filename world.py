@@ -15,7 +15,26 @@ class WorldChunk:
         chunk_seed = hash(f"{x},{y}")
         old_state = random.getstate()
         random.seed(chunk_seed)
+        
+        #Yellow Roses
+        #Rosas Amarillas
+        self.Roses_Yellow = [
+            RoseYellow(
+            self.x + random.randint(0, width - constants.FLOWER),
+            self.y + random.randint(0, width - constants.FLOWER)
+            ) for _ in range(10)
+        ]
+        #Roses
+        #Rosas
+        self.Roses = [
+            Rose(
+            self.x + random.randint(0, width - constants.FLOWER),
+            self.y + random.randint(0, width - constants.FLOWER)
+            ) for _ in range(10)
+        ]
 
+        #Flowers
+        #Flores
         self.flowers = [
             Flower(
             self.x + random.randint(0, width - constants.FLOWER),
@@ -23,12 +42,35 @@ class WorldChunk:
             ) for _ in range(10)
         ]
 
-        self.grasses = [
-            random.choice([Grass1, Grass2, Grass3])(
+        #Grass
+        #Cesped
+        self.grasses1 = [
+            Grass1(
                 self.x + random.randint(0, width - constants.GRASS_OBJ),
                 self.y + random.randint(0, height - constants.GRASS_OBJ)
             ) for _ in range(30)
         ]
+
+        #Grass
+        #Cesped
+        self.grasses2 = [
+            Grass2(
+                self.x + random.randint(0, width - constants.GRASS_OBJ),
+                self.y + random.randint(0, height - constants.GRASS_OBJ)
+            ) for _ in range(30)
+        ]
+
+        #Grass
+        #Cesped
+        self.grasses3 = [
+            Grass3(
+                self.x + random.randint(0, width - constants.GRASS_OBJ),
+                self.y + random.randint(0, height - constants.GRASS_OBJ)
+            ) for _ in range(30)
+        ]
+
+        #Grass
+        #Cesped
         self.trees = [ 
             Tree(
                 self.x + random.randint(0, width-constants.TREE),
@@ -36,6 +78,8 @@ class WorldChunk:
             ) for _ in range(10)
         ]
 
+        #Grass
+        #Cesped
         self.small_stones = [
         SmallStone(
             self.x + random.randint(0, width-constants.SMALL_STONE),
@@ -48,16 +92,16 @@ class WorldChunk:
     def draw(self, screen, grass_image, camera_x, camera_y):
     # Dibuja el fondo de césped como un mosaico
     # ...luego dibuja los objetos del mundo como siempre...
-        chunk_screen_x = self.x - camera_x
-        chunk_screen_y = self.y - camera_y
 
         start_x = max(0, (camera_x - self.x - constants.GRASS) // constants.GRASS)
         end_x = min(self.width // constants.GRASS + 1,
                     (camera_x + constants.WIDTH - self.x + constants.GRASS) // constants.GRASS + 1)
         start_y = max(0, (camera_y - self.y - constants.GRASS) // constants.GRASS)
         end_y = min(self.width // constants.GRASS + 1,
-                    (camera_y + constants.WIDTH - self.y + constants.GRASS) // constants.GRASS + 1)
+                    (camera_y + constants.HEIGHT - self.y + constants.GRASS) // constants.GRASS + 1)
         
+        #Generate Elements
+        #Generar los elementos
         for y in range(int(start_y), int(end_y)):
             for x in range(int(start_x), int(end_x)):
                 screen_x = self.x + x * constants.GRASS - camera_x
@@ -85,7 +129,35 @@ class WorldChunk:
                 flower_screen_y + flower.size >= 0 and flower_screen_y <= constants.HEIGHT):
                 flower.draw(screen, camera_x, camera_y)
 
-        for grass in self.grasses:
+        for flower in self.Roses:
+            flower_screen_x = flower.x - camera_x
+            flower_screen_y = flower.y - camera_y
+            if (flower_screen_x + flower.size >= 0 and flower_screen_x <= constants.WIDTH and 
+                flower_screen_y + flower.size >= 0 and flower_screen_y <= constants.HEIGHT):
+                flower.draw(screen, camera_x, camera_y)
+
+        for flower in self.Roses_Yellow:
+            flower_screen_x = flower.x - camera_x
+            flower_screen_y = flower.y - camera_y
+            if (flower_screen_x + flower.size >= 0 and flower_screen_x <= constants.WIDTH and 
+                flower_screen_y + flower.size >= 0 and flower_screen_y <= constants.HEIGHT):
+                flower.draw(screen, camera_x, camera_y)
+
+        for grass in self.grasses1:
+            grass_screen_x = grass.x - camera_x
+            grass_screen_y = grass.y - camera_y
+            if (grass_screen_x + grass.size >= 0 and grass_screen_x <= constants.WIDTH and 
+                grass_screen_y + grass.size >= 0 and grass_screen_y <= constants.HEIGHT):
+                grass.draw(screen, camera_x, camera_y)
+
+        for grass in self.grasses2:
+            grass_screen_x = grass.x - camera_x
+            grass_screen_y = grass.y - camera_y
+            if (grass_screen_x + grass.size >= 0 and grass_screen_x <= constants.WIDTH and 
+                grass_screen_y + grass.size >= 0 and grass_screen_y <= constants.HEIGHT):
+                grass.draw(screen, camera_x, camera_y)
+
+        for grass in self.grasses3:
             grass_screen_x = grass.x - camera_x
             grass_screen_y = grass.y - camera_y
             if (grass_screen_x + grass.size >= 0 and grass_screen_x <= constants.WIDTH and 
@@ -101,14 +173,6 @@ class World:
 
         self.view_width = width
         self.view_height = height
-        # self._flowers = (
-        #     [Flower(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(15)] +
-        #     [Rose(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(5)] +
-        #     [RoseYellow(random.randint(0, width - constants.FLOWER), random.randint(0, height - constants.FLOWER)) for _ in range(5)] +
-        #     [Grass1(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(20)] +
-        #     [Grass2(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(20)] +
-        #     [Grass3(random.randint(0, width - constants.GRASS_OBJ), random.randint(0, height - constants.GRASS_OBJ)) for _ in range(20)]
-        # )
 
         grass_path = os.path.join('assets', 'images', 'objects', 'grass.png')
         self.grass_image = pygame.image.load(grass_path).convert()
@@ -207,7 +271,7 @@ class World:
     # Dibuja los elementos del mundo en la pantalla
     def draw(self, screen, camera_x, camera_y):
         for chunk in self.active_chunks.values():
-                chunk.draw(screen, self.grass_image, camera_x, camera_y)
+                chunk.draw(screen, self.grass_rect, camera_x, camera_y)
             
         for flower in self.flowers:
             flower.draw(screen, camera_x, camera_y)
@@ -243,9 +307,44 @@ class World:
         for chunk in self.active_chunks.values():
             all_flowers.extend(chunk.flowers)
         return all_flowers
+    
+    @property
+    def roses(self):
+        all_roses = []
+        for chunk in self.active_chunks.values():
+            all_roses.extend(chunk.Roses)
+        return all_roses
+    
+    @property
+    def roses_yellow(self):
+        all_yellow = []
+        for chunk in self.active_chunks.values():
+            all_yellow.extend(chunk.Roses_Yellow)
+        return all_yellow
+    
+    @property
+    def flowers(self):
+        all_flowers = []
+        for chunk in self.active_chunks.values():
+            all_flowers.extend(chunk.flowers)
+        return all_flowers
 
     @property
-    def grasses(self):
+    def grasses1(self):
+        all_grasses = []
+        for chunk in self.active_chunks.values():
+            all_grasses.extend(chunk.grasses)
+        return all_grasses
+    
+    @property
+    def grasses2(self):
+        all_grasses = []
+        for chunk in self.active_chunks.values():
+            all_grasses.extend(chunk.grasses)
+        return all_grasses
+    
+    @property
+    def grasses3(self):
         all_grasses = []
         for chunk in self.active_chunks.values():
             all_grasses.extend(chunk.grasses)
