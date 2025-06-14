@@ -146,7 +146,7 @@ class Character:
     #Check if the character collides with an object, reducing the collision area by 25%
     #Verifica si el personaje colisiona con un objeto, reduciendo el área de colisión en un 25%
     def check_collision(self, x, y, obj):
-        shrink = 0.25  # Reduce el área de colisión en un 25%
+        shrink = 1  # Reduce el área de colisión en un 25%
         obj_x = obj.x + obj.size * shrink / 2
         obj_y = obj.y + obj.size * shrink / 2
         obj_size = obj.size * (1 - shrink)
@@ -179,45 +179,45 @@ class Character:
                             chunk.trees.remove(tree)
                         return
 
-        #Stones
-        #Piedras
-        for stone in chunk.small_stones:
-            if self.is_near(stone):
-                if stone.mine():
-                    self.inventory["stone"] += 1
-                if stone.stone == 0:
-                    chunk.small_stones.remove(stone)
-                return
+            #Stones
+            #Piedras
+            for stone in chunk.small_stones:
+                if self.is_near(stone):
+                    if stone.mine():
+                        self.inventory["stone"] += 1
+                        if stone.stone == 0:
+                            chunk.small_stones.remove(stone)
+                        return
 
-        #Flowers
-        #Flores
-        for flower in chunk.flowers:
-            if self.is_near(flower):
-                if flower.collect():
-                    self.inventory["flower"] += 1
-                if flower.flower == 0:
-                    chunk.flowers.remove(flower)
-                return
+            #Flowers
+            #Flores
+            for flower in chunk.flowers:
+                if self.is_near(flower):
+                    if flower.collect():
+                        self.inventory["flower"] += 1
+                    if flower.flower == 0:
+                        chunk.flowers.remove(flower)
+                    return
 
-        #Roses
-        #Rosas
-        for rose in chunk.Roses:
-            if self.is_near(rose):
-                if rose.collect():
-                    self.inventory["rose"] += 1
-                if rose.rose == 0:
-                    chunk.Roses.remove(rose)
-                return
+            #Roses
+            #Rosas
+            for rose in chunk.Roses:
+                if self.is_near(rose):
+                    if rose.collect():
+                        self.inventory["rose"] += 1
+                    if rose.rose == 0:
+                        chunk.Roses.remove(rose)
+                    return
 
-        #Yellow Roses
-        #Rosas amarillas
-        for rose_yellow in chunk.Roses_Yellow:
-            if self.is_near(rose_yellow):
-                if rose_yellow.collect():
-                    self.inventory["rose_yellow"] += 1
-                if rose_yellow.rose_yellow == 0:
-                    chunk.Roses_Yellow.remove(rose_yellow)
-                return
+            #Yellow Roses
+            #Rosas amarillas
+            for rose_yellow in chunk.Roses_Yellow:
+                if self.is_near(rose_yellow):
+                    if rose_yellow.collect():
+                        self.inventory["rose_yellow"] += 1
+                    if rose_yellow.rose_yellow == 0:
+                        chunk.Roses_Yellow.remove(rose_yellow)
+                    return
 
     #Draw the inventory on the screen   
     #Dibuja el inventario en la pantalla
