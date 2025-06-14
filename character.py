@@ -1,6 +1,7 @@
 import pygame
 import constants
 import os
+from constants import *
 from elements import Flower, Rose, RoseYellow
 
 class Character:
@@ -16,12 +17,25 @@ class Character:
                           "rose_yellow": 0
                           }
         
+
         #Load Character image
         #Carga la imagen del personaje
-        image_path = os.path.join("assets", "images", "character", "Imagen1.png")
-        self.image = pygame.image.load(image_path).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (constants.PLAYER, constants.PLAYER))
-        self.size = self.image.get_width()
+        image_path = os.path.join("assets", "images", "character", "character.png")
+        self.sprite_sheet = pygame.image.load(image_path).convert_alpha()
+
+        #Animation properties
+        #Propiedades de la animación
+        self.frame_size = FRAME_SIZE
+        self.animation_frame = 0
+        self.animation_timer = 0
+        self.animation_delay = ANIMATION_DELAY
+        self.current_state = IDLE_DOWN
+        self.moving = False
+        self.facing_left = False
+
+        #Load all animations
+        #Carga todas las animaciones
+        self.animations = self.load_animations()
 
         #Load item images
         #Carga las imágenes de los ítems
@@ -39,7 +53,31 @@ class Character:
         self.food = constants.MAX_FOOD
         self.thirst = constants.MAX_THIRST
 
-    #Load item images from the assets folder
+    def load_animations(self):
+        animations = {}
+        for state in range(6):
+            frames = [] 
+            for frame in range(BASIC_FRAMES):
+                surface = pygame.Surface((self.frame_size, self.frame_size), pygame.SRCALPHA)
+                surface.blit(self.sprite_sheet, (0, 0), 
+                             (frame * self.frame_size,
+                              state * self.frame_size,
+                              self.frame_size, 
+                              self.frame_size))
+        
+                if constants.PLAYER != self.frame_size:
+                    surface = pygame.transform.scale(surface, (constants.PLAYER, constants.PLAYER))
+                frames.append(surface)
+            animations[state] = frames
+        return animations
+
+    def update_animation(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.animation_timer > self.animation_delay:
+            self.animation_timer = current_time
+            self.animation_frame = (self.animation_frame + 1) % 6
+
+    #Load item images from the assets folder 
     #Carga imágenes de ítems desde la carpeta de assets
     def load_item_images(self, filename):
         path = os.path.join("assets", "images", "objects", filename)
@@ -49,23 +87,54 @@ class Character:
     #Draw the character on the screen
     #Dibuja el personaje en la pantalla
     def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+        current_frame = self.animations[self.current_state][self.animation_frame]
+        if self.facing_left:
+            current_frame = pygame.transform.flip(current_frame, True, False)
+        screen.blit(current_frame, (self.x, self.y))
+
         self.draw_status_bars(screen)
 
     #Move the character, checking for collisions with trees
     #Mueve el personaje, comprobando colisiones con árboles
     def move(self, dx, dy, world):
+        self.moving = dx != 0 or dy != 0
+
+        if self.moving:
+            if dy > 0:
+                self.current_state = WALK_DOWN
+                self.facing_left = False
+            elif dy < 0:
+                self.current_state = WALK_UP
+                self.facing_left = False
+            elif dx > 0:
+                self.current_state = WALK_RIGHT
+                self.facing_left = False 
+            elif dx < 0:
+                self.current_state = WALK_RIGHT
+                self.facing_left = True
+        else:
+            if self.current_state == WALK_DOWN:
+                self.current_state = IDLE_DOWN
+            elif self.current_state == WALK_UP:
+                self.current_state = IDLE_UP
+            elif self.current_state == WALK_RIGHT:
+                self.current_state = IDLE_RIGHT
+
+
         new_x = self.x + dx
         new_y = self.y + dy
         
         for tree in world.trees:
             if self.check_collision(new_x, new_y, tree):
+                self.moving = False
                 return
             
         self.x = new_x
         self.y = new_y
-        self.x = max(0, min(self.x, constants.WIDTH - self.size))
-        self.y = max(0, min(self.y, constants.HEIGHT - self.size))
+        self.x = max(0, min(self.x, constants.WIDTH - constants.PLAYER))
+        self.y = max(0, min(self.y, constants.HEIGHT - constants.PLAYER ))
+
+        self.update_animation()
 
         #When he moves, he loses energy
         #Cuando se mueve, pierde energía
@@ -80,17 +149,17 @@ class Character:
         obj_size = obj.size * (1 - shrink)
         return (
             x < obj_x + obj_size and
-            x + self.size > obj_x and
+            x + constants.PLAYER > obj_x and
             y < obj_y + obj_size and
-            y + self.size > obj_y
+            y + constants.PLAYER > obj_y
         )
 
     #Check if the character is near an object, allowing interaction
     #Verifica si el personaje está cerca de un objeto, permitiendo la interacción
     def is_near(self, obj):
         return (
-            abs(self.x - obj.x) <= max(self.size, obj.size) + 5 and
-            abs(self.y - obj.y) <= max(self.size, obj.size) + 5
+            abs(self.x - obj.x) <= max(constants.PLAYER, obj.size) + 5 and
+            abs(self.y - obj.y) <= max(constants.PLAYER, obj.size) + 5
         )
     
     #Interact with the world, collecting resources from trees, stones, and flowers
