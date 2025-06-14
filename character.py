@@ -53,6 +53,8 @@ class Character:
         self.food = constants.MAX_FOOD
         self.thirst = constants.MAX_THIRST
 
+    #Load the animations by character
+    #Carga las animaciones del personaje
     def load_animations(self):
         animations = {}
         for state in range(6):
@@ -167,46 +169,55 @@ class Character:
     #Interacciona con el mundo, recolectando recursos de árboles, piedras y flores
     def interact(self, world):
         #Trees
-        #Árboles
-        for tree in world.trees:
-            if self.is_near(tree):
-                if tree.chop():
-                    self.inventory["wood"] += 1
-                    if tree.wood == 0:
-                        world.trees.remove(tree)
-                    return
+        # Árboles
+        for chunk in world.active_chunks.values():
+            for tree in chunk.trees:
+                if self.is_near(tree):
+                    if tree.chop():
+                        self.inventory["wood"] += 1
+                        if tree.wood == 0:
+                            chunk.trees.remove(tree)
+                        return
+
         #Stones
         #Piedras
-        for stone in world.small_stones:
+        for stone in chunk.small_stones:
             if self.is_near(stone):
                 if stone.mine():
                     self.inventory["stone"] += 1
                 if stone.stone == 0:
-                    world.small_stones.remove(stone)
+                    chunk.small_stones.remove(stone)
                 return
-        
+
         #Flowers
         #Flores
-        for flower in world.flowers:
+        for flower in chunk.flowers:
             if self.is_near(flower):
-                if isinstance(flower, Flower):
-                    if flower.collect():
-                        self.inventory["flower"] += 1
-                    if flower.flower == 0:
-                        world.flowers.remove(flower)
-                    return
-                elif isinstance(flower, Rose):
-                    if flower.collect():
-                        self.inventory["rose"] += 1
-                    if flower.rose == 0:
-                        world.flowers.remove(flower)
-                    return
-                elif isinstance(flower, RoseYellow):
-                    if flower.collect():
-                        self.inventory["rose_yellow"] += 1
-                    if flower.rose_yellow == 0:
-                        world.flowers.remove(flower)
-                    return
+                if flower.collect():
+                    self.inventory["flower"] += 1
+                if flower.flower == 0:
+                    chunk.flowers.remove(flower)
+                return
+
+        #Roses
+        #Rosas
+        for rose in chunk.Roses:
+            if self.is_near(rose):
+                if rose.collect():
+                    self.inventory["rose"] += 1
+                if rose.rose == 0:
+                    chunk.Roses.remove(rose)
+                return
+
+        #Yellow Roses
+        #Rosas amarillas
+        for rose_yellow in chunk.Roses_Yellow:
+            if self.is_near(rose_yellow):
+                if rose_yellow.collect():
+                    self.inventory["rose_yellow"] += 1
+                if rose_yellow.rose_yellow == 0:
+                    chunk.Roses_Yellow.remove(rose_yellow)
+                return
 
     #Draw the inventory on the screen   
     #Dibuja el inventario en la pantalla
@@ -229,6 +240,7 @@ class Character:
                 y_offset += 40
         
         close_text = font.render("Press 'E' to close inventory", True, constants.WHITE)
+        #Text for close the inventory
         #Texto para cerrar el inventario
         screen.blit(close_text, (constants.WIDTH // 2 - close_text.get_width() // 2, constants.HEIGHT - 40))    
 
