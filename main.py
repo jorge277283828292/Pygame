@@ -95,6 +95,7 @@ def main():
         #Draw the status bars for energy, food, and thirst
         #Dibuja las barras de estado para energia, comida y sed
 
+    
         font = pygame.font.Font(None, 24)
         energy_text = font.render(f"Energy: {int(character.energy)}", True, constants.WHITE)
         food_text = font.render(f"Food: {int(character.food)}", True, constants.WHITE)
