@@ -32,6 +32,10 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN: # Handle mouse button events
                 if event.button == 1:  
                     character.interact(world)
+                    character.inventory.handle_click(pygame.mouse.get_pos(), event.button, show_inventory)
+                elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    character.inventory.handle_click(pygame.mouse.get_pos(), event.button, show_inventory)
+
             if event.type == pygame.KEYDOWN: # Handle keyboard events
                 if event.key == pygame.K_e: # Toggle inventory visibility
                     show_inventory = not show_inventory
@@ -87,6 +91,7 @@ def main():
         if show_inventory:
             character.draw_inventory(screen)
 
+        character.draw_inventory(screen, show_inventory)
         #Draw the status bars for energy, food, and thirst
         #Dibuja las barras de estado para energia, comida y sed
 

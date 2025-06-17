@@ -2,20 +2,14 @@ import pygame
 import constants
 import os
 from constants import *
-
+from inventory import Inventory
 class Character:
     #Inventory items
     #Ítems del inventario
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.inventory = {"wood" : 0, 
-                          "stone": 0,
-                          "flower": 0,
-                          "rose": 0,
-                          "rose_yellow": 0
-                          }
-        
+        self.inventory = Inventory()
 
         #Load Character image
         #Carga la imagen del personaje
@@ -158,7 +152,7 @@ class Character:
     #Check if the character collides with an object, reducing the collision area by 25%
     #Verifica si el personaje colisiona con un objeto, reduciendo el área de colisión en un 25%
     def check_collision(self, x, y, obj):
-        shrink = 1  # Reduce el área de colisión en un 25%
+        shrink = 0.7  # Reduce el área de colisión en un 25%
         obj_x = obj.x + obj.size * shrink / 2
         obj_y = obj.y + obj.size * shrink / 2
         obj_size = obj.size * (1 - shrink)
@@ -183,20 +177,19 @@ class Character:
         #Trees
         # Árboles
         for chunk in world.active_chunks.values():
-            for tree in chunk.trees:
+            for tree in chunk.trees[:]:  # Línea X (donde esté tu bucle de árboles)
                 if self.is_near(tree):
                     if tree.chop():
-                        self.inventory["wood"] += 1
-                        if tree.wood == 0:
+                        self.inventory.add_item('wood')
+                        if hasattr(tree, 'wood') and tree.wood == 0:
                             chunk.trees.remove(tree)
-                        return
-
+                    return
             #Stones
             #Piedras
             for stone in chunk.small_stones:
                 if self.is_near(stone):
                     if stone.mine():
-                        self.inventory["stone"] += 1
+                        self.inventory.add_item('stone')
                         if stone.stone == 0:
                             chunk.small_stones.remove(stone)
                         return
@@ -206,7 +199,7 @@ class Character:
             for flower in chunk.flowers:
                 if self.is_near(flower):
                     if flower.collect():
-                        self.inventory["flower"] += 1
+                        self.inventory.add_item('flower')
                     if flower.flower == 0:
                         chunk.flowers.remove(flower)
                     return
@@ -216,7 +209,7 @@ class Character:
             for rose in chunk.Roses:
                 if self.is_near(rose):
                     if rose.collect():
-                        self.inventory["rose"] += 1
+                        self.inventory.add_item('rose')
                     if rose.rose == 0:
                         chunk.Roses.remove(rose)
                     return
@@ -226,35 +219,20 @@ class Character:
             for rose_yellow in chunk.Roses_Yellow:
                 if self.is_near(rose_yellow):
                     if rose_yellow.collect():
-                        self.inventory["rose_yellow"] += 1
+                        self.inventory.add_item('rose_yellow')
                     if rose_yellow.rose_yellow == 0:
                         chunk.Roses_Yellow.remove(rose_yellow)
                     return
 
     #Draw the inventory on the screen   
     #Dibuja el inventario en la pantalla
-    def draw_inventory(self, screen):
-        background = pygame.Surface((constants.WIDTH, constants.HEIGHT), pygame.SRCALPHA)
-        background.fill((0, 0, 0, 128))
-        screen.blit(background, (0, 0))  # Fondo semitransparente
+    def draw_inventory(self, screen, show_inventory=False):
+        self.inventory.draw(screen, show_inventory)
 
-        font = pygame.font.Font(None, 36)
-        title = font.render("Inventory", True, constants.WHITE) 
-        screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 20))
-
-        item_font = pygame.font.Font(None, 24)
-        y_offset = 80
-        for item, quantity in self.inventory.items():
-            if quantity > 0:
-                screen.blit(self.item_images[item], (constants.WIDTH // 2 - 60, y_offset))
-                text = item_font.render(f"{item.capitalize()}: {quantity}", True, constants.WHITE)
-                screen.blit(text, (constants.WIDTH // 2 - 20, y_offset + 10)) 
-                y_offset += 40
-        
-        close_text = font.render("Press 'E' to close inventory", True, constants.WHITE)
-        #Text for close the inventory
-        #Texto para cerrar el inventario
-        screen.blit(close_text, (constants.WIDTH // 2 - close_text.get_width() // 2, constants.HEIGHT - 40))    
+        if show_inventory:
+            font = pygame.font.Font(None, 24)   
+            close_text = font.render("Press 'E' To close the inventory", True, constants.WHITE)
+            screen.blit(close_text, (constants.WIDTH // 2 - close_text.get_width() // 2, constants.HEIGHT - 40))
 
     #Update the character's energy, food, and thirst levels
     #Actualiza los niveles de energía, comida y sed del personaje

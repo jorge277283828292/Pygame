@@ -321,31 +321,24 @@ class World:
         for chunk in self.active_chunks.values():
             all_yellow.extend(chunk.Roses_Yellow)
         return all_yellow
-    
-    @property
-    def flowers(self):
-        all_flowers = []
-        for chunk in self.active_chunks.values():
-            all_flowers.extend(chunk.flowers)
-        return all_flowers
 
     @property
     def grasses1(self):
         all_grasses = []
         for chunk in self.active_chunks.values():
-            all_grasses.extend(chunk.grasses)
+            all_grasses.extend(chunk.grasses1)
         return all_grasses
-    
+
     @property
     def grasses2(self):
         all_grasses = []
         for chunk in self.active_chunks.values():
-            all_grasses.extend(chunk.grasses)
+            all_grasses.extend(chunk.grasses2)
         return all_grasses
-    
+
     @property
     def grasses3(self):
         all_grasses = []
         for chunk in self.active_chunks.values():
-            all_grasses.extend(chunk.grasses)
+            all_grasses.extend(chunk.grasses3)
         return all_grasses
