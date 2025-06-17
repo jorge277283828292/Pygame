@@ -231,8 +231,8 @@ class Character:
 
         if show_inventory:
             font = pygame.font.Font(None, 24)   
-            close_text = font.render("Press 'E' To close the inventory", True, constants.WHITE)
-            screen.blit(close_text, (constants.WIDTH // 2 - close_text.get_width() // 2, constants.HEIGHT - 40))
+            close_text = font.render("Press 'E'to close the inventory", True, constants.WHITE)
+            screen.blit(close_text, (constants.WIDTH // 2 - close_text.get_width() // 2, constants.INVENTORY_Y - 35))
 
     #Update the character's energy, food, and thirst levels
     #Actualiza los niveles de energía, comida y sed del personaje

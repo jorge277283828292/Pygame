@@ -32,7 +32,10 @@ class Inventory:
             'rose': os.path.join('assets', 'images', 'objects', 'rose.png'),
 
             # Rosa amarilla
-            'rose_yellow': os.path.join('assets', 'images', 'objects', 'rose-yellow.png')
+            'rose_yellow': os.path.join('assets', 'images', 'objects', 'rose-yellow.png'),
+
+            # Madera
+            'wood': os.path.join('assets', 'images', 'objects', 'wood.png')
         }
     
     def add_item(self, item_name, quantity=1):
