@@ -324,3 +324,10 @@ class Inventory:
                 return
             
         self.crafting_result = None
+
+    def clear_crafting_grid(self):
+        for row in self.crafting_grid:
+            for item in row:
+                if item:
+                    self.add_item(item.name, item.quantity)
+        self.crafting_grid = [[None for _ in range(constants.CRAFTING_GRID_COLS)] for _ in range(constants.CRAFTING_GRID_ROWS)]

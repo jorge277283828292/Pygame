@@ -39,6 +39,8 @@ def main():
             if event.type == pygame.KEYDOWN: # Handle keyboard events
                 if event.key == pygame.K_e: # Toggle inventory visibility
                     show_inventory = not show_inventory
+                    if not show_inventory:
+                        character.inventory.clear_crafting_grid()
                 if event.key == pygame.K_f: 
                     character.update_food(20) #Update food(In the future, this will be replaced by a food item)
                 if event.key == pygame.K_t: 
