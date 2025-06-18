@@ -30,16 +30,6 @@ class Character:
         #Load all animations
         #Carga todas las animaciones
         self.animations = self.load_animations()
-
-        #Load item images
-        #Carga las imágenes de los ítems
-        self.item_images = {
-            "wood": self.load_item_images("wood.png"),
-            "stone": self.load_item_images("stone.png"),
-            "flower": self.load_item_images("flowers.png"), 
-            "rose": self.load_item_images("rose.png"),
-            "rose_yellow": self.load_item_images("rose-yellow.png")
-        }
         
         #Initialize status
         #Inicializa los estados
@@ -74,13 +64,6 @@ class Character:
         if current_time - self.animation_timer > animation_speed:
             self.animation_timer = current_time
             self.animation_frame = (self.animation_frame + 1) % 6
-
-    #Load item images from the assets folder 
-    #Carga imágenes de ítems desde la carpeta de assets
-    def load_item_images(self, filename):
-        path = os.path.join("assets", "images", "objects", filename)
-        image = pygame.image.load(path).convert_alpha()
-        return pygame.transform.scale(image, (24, 24))
 
     #Draw the character on the screen
     #Dibuja el personaje en la pantalla

@@ -111,18 +111,11 @@ def main():
         screen.blit(energy_text, (10, constants.HEIGHT - 115))
         screen.blit(food_text, (10, constants.HEIGHT - 90))
         screen.blit(thirst_text, (10, constants.HEIGHT - 65))
-        screen.blit(stamina_text, (10, constants.HEIGHT - 40))
+        scraeen.blit(stamina_text, (10, constants.HEIGHT - 40))
         screen.blit(time_text, (10, constants.HEIGHT - 15))
         
 
         pygame.display.flip()
-
-# Define the Surface class to handle the day/night overlay
-class Surface:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.day_overlay = pygame.Surface((width, height))
 
 if __name__ == '__main__':
     main()

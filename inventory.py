@@ -27,7 +27,7 @@ class Inventory:
             'rose': os.path.join('assets', 'images', 'objects', 'rose.png'),
             'rose_yellow': os.path.join('assets', 'images', 'objects', 'rose-yellow.png'),
             'wood': os.path.join('assets', 'images', 'objects', 'wood.png'),
-            'hacha' : os.path.join('assets', 'images', 'objects', 'axe.png'),
+            'axe' : os.path.join('assets', 'images', 'objects', 'axe.png'),
             'bunch': os.path.join('assets', 'images', 'objects', 'bunch.png'),
             'stick': os.path.join('assets', 'images', 'objects', 'stick_stone.png')
         }
@@ -38,12 +38,12 @@ class Inventory:
                 'result': 'axe'
             },
             'bunch': {
-                'pattern': [('flower', 'rose', 'rose_yellow'), (None, None)],
+                'pattern': [('rose', 'rose_yellow'), (None, None)],
                 'result': 'bunch'
             },
             'stick': {
-                'pattern': [('stone', 'stone', 'wood'), (None, None)],
-                'result': 'stick_stone'
+                'pattern': [('stone', None), (None, 'wood')],
+                'result': 'stick'
             }
         }
     
@@ -160,23 +160,25 @@ class Inventory:
                                                 constants.INVENTORY_Y + (row * constants.SLOT_SIZE))
                     return True
 
-                if constants.CRAFTING_GRID_Y <= mouse_y <= constants.CRAFTING_GRID_Y + (
-                    constants.CRAFTING_GRID_SIZE * constants.SLOT_SIZE):
-                    row = (mouse_y -constants.CRAFTING_GRID_Y) // constants.SLOT_SIZE
-                    col = (mouse_x - constants.CRAFTING_GRID_X) // constants.SLOT_SIZE
-                    if (0 <= row < constants.CRAFTING_GRID_SIZE 
-                        and 0 <= col < constants.CRAFTING_GRID_SIZE):
-                        self._handle_crafting_grid_click(button, row, col)
-                        return True
+            # CRAFTING GRID
+            if constants.CRAFTING_GRID_Y <= mouse_y <= constants.CRAFTING_GRID_Y + (
+                constants.CRAFTING_GRID_SIZE * constants.SLOT_SIZE):
+                row = (mouse_y - constants.CRAFTING_GRID_Y) // constants.SLOT_SIZE
+                col = (mouse_x - constants.CRAFTING_GRID_X) // constants.SLOT_SIZE
+                if (0 <= row < constants.CRAFTING_GRID_SIZE 
+                    and 0 <= col < constants.CRAFTING_GRID_SIZE):
+                    self._handle_crafting_grid_click(button, row, col)
+                    return True
 
-        if(constants.CRAFTING_RESULT_SLOT_X <= mouse_x <= constants.CRAFTING_RESULT_SLOT_X and
-                constants.CRAFTING_RESULT_SLOT_Y <= mouse_y <= constants.CRAFTING_RESULT_SLOT_Y + constants.SLOT_SIZE):    
-            self._handle_craftin_result_click(button)
+        # ESTE BLOQUE DEBE IR FUERA DE LOS IF ANTERIORES
+        if (constants.CRAFTING_RESULT_SLOT_X <= mouse_x <= constants.CRAFTING_RESULT_SLOT_X + constants.SLOT_SIZE and
+            constants.CRAFTING_RESULT_SLOT_Y <= mouse_y <= constants.CRAFTING_RESULT_SLOT_Y + constants.SLOT_SIZE):
+            self._handle_crafting_result_click(button)
             return True
 
-            if self.dragged_item and button == 1:
-                self._return_dragged_item() 
-            return False
+        if self.dragged_item and button == 1:
+            self._return_dragged_item() 
+        return False
     
     def _handle_slot_click(self, button, slot_list, index, slot_x, slot_y):  # 1 usage
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -264,38 +266,21 @@ class Inventory:
             self._draw_item(screen, self.crafting_result,
                             constants.CRAFTING_RESULT_SLOT_X,
                             constants.CRAFTING_RESULT_SLOT_Y)
-            
-    def _handle_crafting_grid_click(self, button, row, col):
-        if button == 1: # Click izquierdo
-            if self.dragged_item:
-                # Soltar item en la cuadrícula
-                if self.crafting_grid[row][col] is None:
-                    self.crafting_grid[row][col] = self.dragged_item
-                    self.dragged_item = None
-                else:
-                    # Intercambiar items
-                    self.crafting_grid[row][col], self.dragged_item = self.dragged_item, self.crafting_grid[row][col] # Fixed swapping logic
-            elif self.crafting_grid[row][col]:
-                # Comenzar a arrastrar
-                self.dragged_item = self.crafting_grid[row][col]
-                self.crafting_grid[row][col] = None
-
-            self._check_recipe()
 
     def _handle_crafting_result_click(self, button):
-        if button == 1 and self.crafting_result: # Click izquierdo y hay resultado
-            if not self.dragged_item:
-                # Tomar el resultado
-                self.dragged_item = self.crafting_result
-                self.crafting_result = None
-                # Consumir los materiales
-                for row in range(constants.CRAFTING_GRID_SIZE):
-                    for col in range(constants.CRAFTING_GRID_SIZE):
-                        if self.crafting_grid[row][col]:
-                            if self.crafting_grid[row][col].quantity > 1:
-                                self.crafting_grid[row][col].quantity -= 1
-                            else:
-                                self.crafting_grid[row][col] = None
+        if button == 1 and self.crafting_result:
+            self.add_item(self.crafting_result.name, self.crafting_result.quantity)
+            # Consumir los materiales usados
+            for row in range(constants.CRAFTING_GRID_ROWS):
+                for col in range(constants.CRAFTING_GRID_COLS):
+                    item = self.crafting_grid[row][col]
+                    if item:
+                        if item.quantity > 1:
+                            item.quantity -= 1
+                        else:
+                            self.crafting_grid[row][col] = None
+            self.crafting_result = None
+            self.update_crafting_result()
 
     def _check_recipe(self):
         current_pattern = []
@@ -331,3 +316,63 @@ class Inventory:
                 if item:
                     self.add_item(item.name, item.quantity)
         self.crafting_grid = [[None for _ in range(constants.CRAFTING_GRID_COLS)] for _ in range(constants.CRAFTING_GRID_ROWS)]
+        self.update_crafting_result()
+
+    def _handle_crafting_grid_click(self, button, row, col):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        if button == 1:  # Click izquierdo
+            if self.dragged_item:
+                # Soltar item en la cuadrícula de crafteo
+                if self.crafting_grid[row][col] is None:
+                    self.crafting_grid[row][col] = self.dragged_item
+                    self.dragged_item = None
+                else:
+                    # Intercambiar items
+                    self.crafting_grid[row][col], self.dragged_item = self.dragged_item, self.crafting_grid[row][col]
+                    return
+            elif self.crafting_grid[row][col]:
+                # Comenzar a arrastrar
+                self.dragged_item = self.crafting_grid[row][col]
+                self.crafting_grid[row][col] = None
+                item_rect = self.dragged_item.image.get_rect()
+                item_rect.x = constants.CRAFTING_GRID_X + (col * constants.SLOT_SIZE)
+                item_rect.y = constants.CRAFTING_GRID_Y + (row * constants.SLOT_SIZE)
+                self.dragged_item.drag_offset = (mouse_x - item_rect.centerx, mouse_y - item_rect.centery)
+        # Actualiza el resultado de crafteo después de cada cambio
+        self._check_recipe()
+
+    def update_crafting_result(self):
+        crafted_item = self.check_crafting()
+        if crafted_item:
+            # Si tu check_crafting devuelve solo el nombre, crea el objeto aquí:
+            self.crafting_result = InventoryItem(
+                crafted_item,
+                self.item_images[crafted_item],
+                1
+            )
+        else:
+            self.crafting_result = None
+
+    def check_crafting(self):
+        current_pattern = []
+        for row in range(constants.CRAFTING_GRID_SIZE):
+            pattern_row = []
+            for col in range(constants.CRAFTING_GRID_SIZE):
+                item = self.crafting_grid[row][col]
+                pattern_row.append(item.name if item else None)
+            current_pattern.append(tuple(pattern_row))
+
+        for recipe in self.recipes.values():
+            matches = True
+            for row in range(constants.CRAFTING_GRID_SIZE):
+                for col in range(constants.CRAFTING_GRID_SIZE):
+                    expected = recipe['pattern'][row][col]
+                    actual = current_pattern[row][col]
+                    if expected != actual:
+                        matches = False
+                        break
+                if not matches:
+                    break
+            if matches:
+                return recipe['result']
+        return None
