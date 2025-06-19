@@ -54,14 +54,7 @@ class Flower(GameElement):
     def __init__(self, x, y):
         flower_path = os.path.join('assets', 'images', 'objects', 'flowers.png')
         super().__init__(x, y, flower_path, constants.FLOWER)
-        self.flower = 1
 
-    def collect(self):
-        if self.flower > 0:
-            self.flower -= 1
-            return True
-        return False
-    
 #Rose
 #Rosa
 class Rose(GameElement):

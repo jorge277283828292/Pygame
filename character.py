@@ -259,15 +259,6 @@ class Character:
                         chunk.Roses_Yellow.remove(rose_yellow)
                     return
 
-            # Flores
-            for flower in chunk.flowers[:]:
-                if self.is_near(flower):
-                    if flower.collect():
-                        self.inventory.add_item('flower')
-                    if flower.flower == 0:
-                        chunk.flowers.remove(flower)
-                    return
-
             # Piedras
             for stone in chunk.small_stones[:]:
                 if self.is_near(stone):

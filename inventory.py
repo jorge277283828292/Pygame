@@ -31,7 +31,8 @@ class Inventory:
             'wood': os.path.join('assets', 'images', 'objects', 'wood.png'),
             'axe' : os.path.join('assets', 'images', 'objects', 'axe.png'),
             'bunch': os.path.join('assets', 'images', 'objects', 'bunch.png'),
-            'stick': os.path.join('assets', 'images', 'objects', 'stick_stone.png')
+            'stick': os.path.join('assets', 'images', 'objects', 'stick_stone.png'),
+            'hoe': os.path.join('assets', 'images', 'objects', 'hoe.png')
         }
 
         self.recipes = {
@@ -46,6 +47,10 @@ class Inventory:
             'stick': {
                 'pattern': [('stone', None), (None, 'wood')],
                 'result': 'stick'
+            },
+            'hoe': {
+                'pattern': [(None, 'wood'), ('stone', 'stone')], 
+                'result': 'hoe'
             }
         }
     
