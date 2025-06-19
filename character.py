@@ -4,17 +4,18 @@ import os
 from constants import *
 from inventory import Inventory
 class Character:
-    #Inventory items
-    #Ítems del inventario
     def __init__(self, x, y):
         self.x = x
         self.y = y
         self.inventory = Inventory()
 
-        #Load Character image
-        #Carga la imagen del personaje
+        # Carga la imagen del personaje
         image_path = os.path.join("assets", "images", "character", "character.png")
         self.sprite_sheet = pygame.image.load(image_path).convert_alpha()
+        # SOLO ESTA LÍNEA para la hoja de acciones:
+        self.action_sprite_sheet = pygame.image.load(
+            os.path.join('assets','images','character','Player_Actions.png')
+        ).convert_alpha()
 
         #Animation properties
         #Propiedades de la animación
@@ -27,9 +28,14 @@ class Character:
         self.facing_left = False
         self.is_running = False
 
+        self.is_chopping = False
+        self.chop_timer = 0
+        self.chop_frame = 0
+
         #Load all animations
         #Carga todas las animaciones
         self.animations = self.load_animations()
+        self.axe_animations = self.load_axe_animations()
         
         #Initialize status
         #Inicializa los estados
@@ -37,6 +43,10 @@ class Character:
         self.food = constants.MAX_FOOD
         self.thirst = constants.MAX_THIRST
         self.stamina = constants.MAX_STAMINA
+        
+        self.action_sprite_sheet = pygame.image.load(
+            os.path.join('assets','images','character','Player_Actions.png')
+        ).convert_alpha()
 
     #Load the animations by character
     #Carga las animaciones del personaje
@@ -45,21 +55,63 @@ class Character:
         for state in range(6):
             frames = [] 
             for frame in range(BASIC_FRAMES):
-                surface = pygame.Surface((self.frame_size, self.frame_size), pygame.SRCALPHA)
-                surface.blit(self.sprite_sheet, (0, 0), 
+                temp_surface = pygame.Surface((self.frame_size, self.frame_size), pygame.SRCALPHA)
+                temp_surface.blit(self.sprite_sheet, (0, 0), 
                              (frame * self.frame_size,
                               state * self.frame_size,
                               self.frame_size, 
                               self.frame_size))
         
-                if constants.PLAYER != self.frame_size:
-                    surface = pygame.transform.scale(surface, (constants.PLAYER, constants.PLAYER))
+                surface = pygame.Surface((constants.PLAYER, constants.PLAYER), pygame.SRCALPHA)
+                scaled_temp = pygame.transform.scale(temp_surface, (constants.PLAYER, constants.PLAYER))
+                surface.blit(scaled_temp, (0, 0))
+
+                frames.append(surface)
+            animations[state] = frames
+        return animations
+
+    def load_axe_animations(self):
+        animations = {}
+
+        row_mapping = {
+            3: 3,
+            4: 4,
+            5: 5
+        }
+
+        for state, row in row_mapping.items():
+            frames = []
+            for frame in range(AXE_FRAMES):
+                temp_surface = pygame.Surface((constants.ACTION_FRAME_SIZE, constants.ACTION_FRAME_SIZE), pygame.SRCALPHA)
+                x = (frame % AXE_COLS) * constants.ACTION_FRAME_SIZE
+                frame_rect = pygame.Rect(x, row * constants.ACTION_FRAME_SIZE,
+                                         constants.ACTION_FRAME_SIZE,
+                                         constants.ACTION_FRAME_SIZE)
+
+                temp_surface.blit(self.action_sprite_sheet, (0, 0), frame_rect)
+
+                action_scale = constants.ACTION_FRAME_SIZE / constants.FRAME_SIZE
+                action_size = int(constants.PLAYER * action_scale)
+
+                surface = pygame.Surface((action_size, action_size), pygame.SRCALPHA)
+
+                scaled_temp = pygame.transform.scale(temp_surface, (action_size, action_size))
+                surface.blit(scaled_temp, (0, 0))
+
                 frames.append(surface)
             animations[state] = frames
         return animations
 
     def update_animation(self):
         current_time = pygame.time.get_ticks()
+
+        if self.is_chopping:
+            if current_time - self.chop_timer > AXE_ANIMATIONS_DELAY:
+                self.chop_timer = current_time
+                self.chop_frame = (self.chop_frame + 1) % AXE_FRAMES
+                if self.chop_frame == 0: # Animation completed
+                    self.is_chopping = False
+
         animation_speed = RUNNING if self.is_running else ANIMATION_DELAY
         if current_time - self.animation_timer > animation_speed:
             self.animation_timer = current_time
@@ -67,16 +119,33 @@ class Character:
 
     #Draw the character on the screen
     #Dibuja el personaje en la pantalla
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen, camera_x, camera_y, show_inventory=False):
         screen_x = self.x - camera_x
         screen_y = self.y - camera_y
 
-        current_frame = self.animations[self.current_state][self.animation_frame]
-        if self.facing_left:
-            current_frame = pygame.transform.flip(current_frame, True, False)
-        screen.blit(current_frame, (screen_x, screen_y))
+        if self.is_chopping:
+            # Selecciona la animación de hacha según la dirección
+            if self.current_state in [IDLE_RIGHT, WALK_RIGHT] or (self.current_state == WALK_RIGHT and self.facing_left):
+                current_frame = self.axe_animations[3][self.chop_frame]
+                if self.facing_left:
+                    current_frame = pygame.transform.flip(current_frame, True, False)
+            elif self.current_state in [IDLE_DOWN, WALK_DOWN]:
+                current_frame = self.axe_animations[4][self.chop_frame]
+            elif self.current_state in [IDLE_UP, WALK_UP]:
+                current_frame = self.axe_animations[5][self.chop_frame]
+            else:
+                current_frame = self.animations[self.current_state][self.animation_frame]
 
-        self.draw_status_bars(screen)
+            frame_rect = current_frame.get_rect()
+            # Centra el frame de acción sobre el personaje
+            offset_x = (frame_rect.width - constants.PLAYER) // 2
+            offset_y = (frame_rect.height - constants.PLAYER)
+            screen.blit(current_frame, (screen_x - offset_x, screen_y - offset_y))
+        else:
+            current_frame = self.animations[self.current_state][self.animation_frame]
+            if self.facing_left:
+                current_frame = pygame.transform.flip(current_frame, True, False)
+            screen.blit(current_frame, (screen_x, screen_y))
 
     #Move the character, checking for collisions with trees
     #Mueve el personaje, comprobando colisiones con árboles
@@ -157,39 +226,23 @@ class Character:
     #Interact with the world, collecting resources from trees, stones, and flowers
     #Interacciona con el mundo, recolectando recursos de árboles, piedras y flores
     def interact(self, world):
-        #Trees
-        # Árboles
         for chunk in world.active_chunks.values():
-            for tree in chunk.trees[:]:  # Línea X (donde esté tu bucle de árboles)
+            # Árboles
+            for tree in chunk.trees[:]:
                 if self.is_near(tree):
+                    has_axe = self.inventory.has_axe_equipped()
+                    if has_axe:
+                        self.is_chopping = True
+                        self.chop_timer = pygame.time.get_ticks()
+                        self.chop_frame = 0
                     if tree.chop():
                         self.inventory.add_item('wood')
-                        if hasattr(tree, 'wood') and tree.wood == 0:
+                        if tree.wood == 0:
                             chunk.trees.remove(tree)
                     return
-            #Stones
-            #Piedras
-            for stone in chunk.small_stones:
-                if self.is_near(stone):
-                    if stone.mine():
-                        self.inventory.add_item('stone')
-                        if stone.stone == 0:
-                            chunk.small_stones.remove(stone)
-                        return
 
-            #Flowers
-            #Flores
-            for flower in chunk.flowers:
-                if self.is_near(flower):
-                    if flower.collect():
-                        self.inventory.add_item('flower')
-                    if flower.flower == 0:
-                        chunk.flowers.remove(flower)
-                    return
-
-            #Roses
-            #Rosas
-            for rose in chunk.Roses:
+            # Rosas
+            for rose in chunk.Roses[:]:
                 if self.is_near(rose):
                     if rose.collect():
                         self.inventory.add_item('rose')
@@ -197,9 +250,8 @@ class Character:
                         chunk.Roses.remove(rose)
                     return
 
-            #Yellow Roses
-            #Rosas amarillas
-            for rose_yellow in chunk.Roses_Yellow:
+            # Rosas amarillas
+            for rose_yellow in chunk.Roses_Yellow[:]:
                 if self.is_near(rose_yellow):
                     if rose_yellow.collect():
                         self.inventory.add_item('rose_yellow')
@@ -207,10 +259,27 @@ class Character:
                         chunk.Roses_Yellow.remove(rose_yellow)
                     return
 
+            # Flores
+            for flower in chunk.flowers[:]:
+                if self.is_near(flower):
+                    if flower.collect():
+                        self.inventory.add_item('flower')
+                    if flower.flower == 0:
+                        chunk.flowers.remove(flower)
+                    return
+
+            # Piedras
+            for stone in chunk.small_stones[:]:
+                if self.is_near(stone):
+                    if stone.mine():
+                        self.inventory.add_item('stone')
+                    if stone.stone == 0:
+                        chunk.small_stones.remove(stone)
+                    return
     #Draw the inventory on the screen   
     #Dibuja el inventario en la pantalla
     def draw_inventory(self, screen, show_inventory=False):
-        self.inventory.draw(screen, show_inventory)
+        self.inventory.draw(screen, 0, 0, show_inventory)
 
         if show_inventory:
             font = pygame.font.Font(None, 24)   

@@ -111,7 +111,7 @@ def main():
         screen.blit(energy_text, (10, constants.HEIGHT - 115))
         screen.blit(food_text, (10, constants.HEIGHT - 90))
         screen.blit(thirst_text, (10, constants.HEIGHT - 65))
-        scraeen.blit(stamina_text, (10, constants.HEIGHT - 40))
+        screen.blit(stamina_text, (10, constants.HEIGHT - 40))
         screen.blit(time_text, (10, constants.HEIGHT - 15))
         
 

@@ -13,6 +13,8 @@ class InventoryItem:
 
 class Inventory:
     def __init__(self):
+        self.left_hand = None
+        self.right_hand = None
         self.hotbar = [None] * constants.HOTBAR_SLOTS
         self.inventory = [[None for _ in range(constants.INVENTORY_COLS)] for _ in range(constants.INVENTORY_ROWS)]
         self.crafting_grid = [[None for _ in range(constants.CRAFTING_GRID_SIZE)] for _ in range(constants.CRAFTING_GRID_SIZE)]
@@ -71,27 +73,27 @@ class Inventory:
                     return True 
         return False
     
-    def draw(self, screen, show_inventory=False):
+    def draw(self, screen, camera_x=0, camera_y=0, show_inventory=False):
+        screen_x = constants.INVENTORY_X
+        screen_y = constants.INVENTORY_Y
+
+        # Dibuja los slots de la mano
+        self._draw_hand_slots(screen)
+        # Dibuja el hotbar
         self._draw_hotbar(screen)
-
+        # Dibuja el inventario principal si está abierto
         if show_inventory:
-            background = pygame.Surface((constants.WIDTH, constants.HEIGHT), pygame.SRCALPHA)
-            background.fill((0, 0, 0, 128))
-            screen.blit(background, (0, 0))
-
             self._draw_main_inventory(screen)
-            self._draw_crafting_grid(screen)        
-
+            self._draw_crafting_grid(screen)
+        # Dibuja el item arrastrado si existe
         if self.dragged_item:
-            mouse_pos = pygame.mouse.get_pos()
-            screen.blit(self.dragged_item.image,
-                        (mouse_pos[0] - self.dragged_item.drag_offset[0],
-                         mouse_pos[1] - self.dragged_item.drag_offset[1]))
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            offset_x, offset_y = self.dragged_item.drag_offset
+            screen.blit(self.dragged_item.image, (mouse_x - offset_x, mouse_y - offset_y))
             if self.dragged_item.quantity > 1:
                 text = self.font.render(str(self.dragged_item.quantity), True, constants.WHITE)
                 text_rect = text.get_rect()
-                text_rect.bottomright = (mouse_pos[0] + self.dragged_item.image.get_width() // 2 - 5,
-                                         mouse_pos[1] + self.dragged_item.image.get_height() // 2 - 5)
+                text_rect.bottomright = (mouse_x + constants.SLOT_SIZE // 2, mouse_y + constants.SLOT_SIZE // 2)
                 screen.blit(text, text_rect)
 
     def _draw_hotbar(self, screen):
@@ -138,8 +140,41 @@ class Inventory:
             text_rect.bottomright = (x + constants.SLOT_SIZE - 5, y + constants.SLOT_SIZE - 5)
             screen.blit(text, text_rect)
 
+    def _draw_hand_slots(self, screen):
+        pygame.draw.rect(screen, constants.SLOT_BORDER,
+                         (constants.LEFT_HAND_SLOT_X, constants.LEFT_HAND_SLOT_Y,
+                          constants.SLOT_SIZE, constants.SLOT_SIZE))
+        pygame.draw.rect(screen, constants.SLOT_COLOR,
+                         (constants.LEFT_HAND_SLOT_X + 2, constants.LEFT_HAND_SLOT_Y + 2,
+                          constants.SLOT_SIZE - 4, constants.SLOT_SIZE - 4))
+        if self.left_hand:
+            self._draw_item(screen, self.left_hand,
+                            constants.LEFT_HAND_SLOT_X,
+                            constants.LEFT_HAND_SLOT_Y)
+        
+        pygame.draw.rect(screen, constants.SLOT_BORDER,
+                 (constants.RIGHT_HAND_SLOT_X, constants.RIGHT_HAND_SLOT_Y,
+                  constants.SLOT_SIZE, constants.SLOT_SIZE))
+        pygame.draw.rect(screen, constants.SLOT_COLOR,
+                        (constants.RIGHT_HAND_SLOT_X + 2, constants.RIGHT_HAND_SLOT_Y + 2,
+                        constants.SLOT_SIZE - 4, constants.SLOT_SIZE - 4))
+        if self.right_hand:
+            self._draw_item(screen, self.right_hand,
+                            constants.RIGHT_HAND_SLOT_X,
+                            constants.RIGHT_HAND_SLOT_Y)
+
     def handle_click(self, pos, button, show_inventory=False):
         mouse_x, mouse_y = pos
+
+        if (constants.LEFT_HAND_SLOT_X <= mouse_x <= constants.LEFT_HAND_SLOT_X + constants.SLOT_SIZE and
+            constants.LEFT_HAND_SLOT_Y <= mouse_y <= constants.LEFT_HAND_SLOT_Y + constants.SLOT_SIZE):
+            self._handle_hand_slot_click(button, 'left')
+            return True
+
+        if (constants.RIGHT_HAND_SLOT_X <= mouse_x <= constants.RIGHT_HAND_SLOT_X + constants.SLOT_SIZE and
+            constants.RIGHT_HAND_SLOT_Y <= mouse_y <= constants.RIGHT_HAND_SLOT_Y + constants.SLOT_SIZE):
+            self._handle_hand_slot_click(button, 'right')
+            return True
 
         if constants.HOTBAR_Y <= mouse_y <= constants.HOTBAR_Y + constants.SLOT_SIZE:
             slot_index = (mouse_x - constants.HOTBAR_X) // constants.SLOT_SIZE
@@ -222,7 +257,30 @@ class Inventory:
                 item_rect.y = slot_y
                 self.dragged_item.drag_offset = (mouse_x - item_rect.centerx,
                                                 mouse_y - item_rect.centery)
-                
+    
+    def _handle_hand_slot_click(self, button, hand):
+            if button == 1:
+                if hand == 'left':
+                    if self.dragged_item:
+                        self.left_hand, self.dragged_item = self.dragged_item, self.left_hand
+                    else:
+                        if self.left_hand:
+                            self.dragged_item = self.left_hand
+                            self.left_hand = None
+                elif hand == 'right':
+                    if self.dragged_item:
+                        self.right_hand, self.dragged_item = self.dragged_item, self.right_hand
+                    else:
+                        if self.right_hand:
+                            self.dragged_item = self.right_hand
+                            self.right_hand = None
+    
+    def has_axe_equipped(self):
+        return (
+            (self.left_hand and self.left_hand.name == 'axe') or
+            (self.right_hand and self.right_hand.name == 'axe')
+
+        )
     def _return_dragged_item(self):  # 1 usage
     # Intentar devolver al hotbar primero
         for i, slot in enumerate(self.hotbar):
