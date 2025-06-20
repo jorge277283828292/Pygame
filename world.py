@@ -1,7 +1,7 @@
 import random
 import pygame
 import constants
-from elements import Tree, SmallStone, Flower, Rose, RoseYellow, Grass1, Grass2, Grass3
+from elements import Tree, SmallStone, Flower, Rose, RoseYellow, Grass1, Grass2, Grass3, FarmLand
 import os
 from pygame import Surface
 
@@ -11,6 +11,7 @@ class WorldChunk:
         self.y = y
         self.width = width
         self.height = height
+        self.farmland_tiles = {}
 
         chunk_seed = hash(f"{x},{y}")
         old_state = random.getstate()
@@ -104,9 +105,16 @@ class WorldChunk:
         #Generar los elementos
         for y in range(int(start_y), int(end_y)):
             for x in range(int(start_x), int(end_x)):
-                screen_x = self.x + x * constants.GRASS - camera_x
-                screen_y = self.y + y * constants.GRASS - camera_y
-                screen.blit(grass_image, (screen_x, screen_y))
+                tile_x = self.x + x * constants.GRASS
+                tile_y = self.y + y * constants.GRASS
+                screen_x = tile_x - camera_x
+                screen_y = tile_y - camera_y
+
+                tile_key = (tile_x, tile_y)
+                if tile_key in self.farmland_tiles:
+                    self.farmland_tiles[tile_key].draw(screen, camera_x, camera_y)
+                else:
+                    screen.blit(grass_image, (screen_x, screen_y))
 
         for stone in self.small_stones:
             stone_screen_x = stone.x - camera_x
@@ -342,3 +350,27 @@ class World:
         for chunk in self.active_chunks.values():
             all_grasses.extend(chunk.grasses3)
         return all_grasses
+    
+    def add_farmland(self, x, y):
+        chunk_key = self.get_chunk_key(x, y)
+        chunk = self.active_chunks.get(chunk_key)
+
+        if chunk:   
+            grid_x = (x // constants.GRASS) * constants.GRASS
+            grid_y = (y // constants.GRASS) * constants.GRASS
+
+            all_objects = (chunk.trees + chunk.small_stones + chunk.Roses + 
+                            chunk.Roses_Yellow + chunk.flowers)
+
+            for obj in all_objects:
+                if (grid_x < obj.x + obj.size and grid_x + constants.GRASS > obj.x and
+                    grid_y < obj.y + obj.size and grid_y + constants.GRASS > obj.y):
+                    return False      
+
+            tile_key = (grid_x, grid_y)
+            if tile_key not in chunk.farmland_tiles:
+                chunk.farmland_tiles[tile_key] = FarmLand(grid_x, grid_y)
+                print(f"FarmLand creado en posición: {grid_x}, {grid_y}")
+                return True
+        return False
+                
