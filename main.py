@@ -19,9 +19,9 @@ def main():
     show_inventory = False
 
     status_update_timer = 0 
-
     camera_x = 0
     camera_y = 0
+
     # Create a surface for the day/night overlay
     while True:
         dt = clock.tick(60)
@@ -33,25 +33,26 @@ def main():
                 if event.button == 1:  
                     character.interact(world)
                     character.inventory.handle_click(pygame.mouse.get_pos(), event.button, show_inventory)
-                    
-                elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                    character.inventory.handle_click(pygame.mouse.get_pos(), event.button, show_inventory)
 
-            if event.type == pygame.KEYDOWN: # Handle keyboard events
-                if event.key == pygame.K_e: # Toggle inventory visibility
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                character.inventory.handle_click(pygame.mouse.get_pos(), event.button, show_inventory)
+
+            # En el bucle de eventos, cambia esto:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
                     show_inventory = not show_inventory
                     if not show_inventory:
                         character.inventory.clear_crafting_grid()
-                if event.key == pygame.K_x: # Usar la azada con X
+                elif event.key == pygame.K_x:  # Usar la azada con X
                     if not show_inventory and character.inventory.has_hoe_equipped():
                         character.is_hoeing = True
                         character.hoe_timer = pygame.time.get_ticks()
                         character.hoe_frame = 0
-                if event.key == pygame.K_f: 
+                elif event.key == pygame.K_f:
                     character.update_food(20)
-                if event.key == pygame.K_t: 
+                elif event.key == pygame.K_t:
                     character.update_thirst(20)
-        
+                    
         #Control the character movement
         #Controles de movimiento
         keys = pygame.key.get_pressed()

@@ -108,11 +108,10 @@ class Character:
 
     def load_hoe_animations(self):
         animations = {}
-
         row_mapping = {
-            6: 6,
-            7: 7,
-            8: 8
+            3: 6,
+            4: 7,
+            5: 8
         }
 
         for state, row in row_mapping.items():
@@ -145,13 +144,15 @@ class Character:
             if current_time - self.chop_timer > AXE_ANIMATIONS_DELAY:
                 self.chop_timer = current_time
                 self.chop_frame = (self.chop_frame + 1) % AXE_FRAMES
+                if self.chop_frame == 0:  # Animación completada
+                    self.is_chopping = False
 
         elif self.is_hoeing:
             if current_time - self.hoe_timer > HOE_ANIMATION_DELAY:
                 self.hoe_timer = current_time
                 self.hoe_frame = (self.hoe_frame + 1) % HOE_FRAMES
-            if self.hoe_frame == 0: # Animation completed
-                        self.is_hoeing = False
+                if self.hoe_frame == HOE_FRAMES - 1:  # Animación completada en el último frame
+                    self.is_hoeing = False
         else:
             animation_speed = RUNNING if self.is_running else ANIMATION_DELAY
             if current_time - self.animation_timer > animation_speed:
@@ -185,13 +186,13 @@ class Character:
         elif self.is_hoeing:
             # Animación de azada (hoe)
             if self.current_state in [IDLE_RIGHT, WALK_RIGHT] or (self.current_state == WALK_RIGHT and self.facing_left):
-                current_frame = self.hoe_animations[3][self.hoe_frame]
+                current_frame = self.hoe_animations[3][self.hoe_frame]  # Usa 3 para derecha/izquierda
                 if self.facing_left:
                     current_frame = pygame.transform.flip(current_frame, True, False)
             elif self.current_state in [IDLE_DOWN, WALK_DOWN]:
-                current_frame = self.hoe_animations[4][self.hoe_frame]
+                current_frame = self.hoe_animations[4][self.hoe_frame]  # Usa 4 para abajo
             elif self.current_state in [IDLE_UP, WALK_UP]:
-                current_frame = self.hoe_animations[5][self.hoe_frame]
+                current_frame = self.hoe_animations[5][self.hoe_frame]  # Usa 5 para arriba
             else:
                 current_frame = self.animations[self.current_state][self.animation_frame]
 
@@ -286,7 +287,7 @@ class Character:
     #Interacciona con el mundo, recolectando recursos de árboles, piedras y flores
     def interact(self, world):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_q] and self.inventory.has_hoe_equipped():
+        if keys[pygame.K_q] and self.inventory.has_hoe_equipped() and not self.is_hoeing:
             self.is_hoeing = True
             self.hoe_timer = pygame.time.get_ticks()
             self.hoe_frame = 0
