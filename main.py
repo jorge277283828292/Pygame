@@ -33,6 +33,7 @@ def main():
                 if event.button == 1:  
                     character.interact(world)
                     character.inventory.handle_click(pygame.mouse.get_pos(), event.button, show_inventory)
+                    
                 elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     character.inventory.handle_click(pygame.mouse.get_pos(), event.button, show_inventory)
 
@@ -41,11 +42,15 @@ def main():
                     show_inventory = not show_inventory
                     if not show_inventory:
                         character.inventory.clear_crafting_grid()
+                if event.key == pygame.K_x: # Usar la azada con X
+                    if not show_inventory and character.inventory.has_hoe_equipped():
+                        character.is_hoeing = True
+                        character.hoe_timer = pygame.time.get_ticks()
+                        character.hoe_frame = 0
                 if event.key == pygame.K_f: 
-                    character.update_food(20) #Update food(In the future, this will be replaced by a food item)
+                    character.update_food(20)
                 if event.key == pygame.K_t: 
-                    character.update_thirst(20) #Update thirst(In the future, this will be replaced by a water item)
-
+                    character.update_thirst(20)
         
         #Control the character movement
         #Controles de movimiento

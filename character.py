@@ -31,11 +31,15 @@ class Character:
         self.is_chopping = False
         self.chop_timer = 0
         self.chop_frame = 0
+        self.is_hoeing = False
+        self.hoe_timer = 0
+        self.hoe_frame = 0
 
         #Load all animations
         #Carga todas las animaciones
         self.animations = self.load_animations()
         self.axe_animations = self.load_axe_animations()
+        self.hoe_animations = self.load_hoe_animations()
         
         #Initialize status
         #Inicializa los estados
@@ -102,6 +106,38 @@ class Character:
             animations[state] = frames
         return animations
 
+    def load_hoe_animations(self):
+        animations = {}
+
+        row_mapping = {
+            6: 6,
+            7: 7,
+            8: 8
+        }
+
+        for state, row in row_mapping.items():
+            frames = []
+            for frame in range(HOE_FRAMES):
+                temp_surface = pygame.Surface((constants.ACTION_FRAME_SIZE, constants.ACTION_FRAME_SIZE), pygame.SRCALPHA)
+                x = (frame % HOE_COLS) * constants.ACTION_FRAME_SIZE
+                frame_rect = pygame.Rect(x, row * constants.ACTION_FRAME_SIZE,
+                                         constants.ACTION_FRAME_SIZE,
+                                         constants.ACTION_FRAME_SIZE)
+
+                temp_surface.blit(self.action_sprite_sheet, (0, 0), frame_rect)
+
+                action_scale = constants.ACTION_FRAME_SIZE / constants.FRAME_SIZE
+                action_size = int(constants.PLAYER * action_scale)
+
+                surface = pygame.Surface((action_size, action_size), pygame.SRCALPHA)
+
+                scaled_temp = pygame.transform.scale(temp_surface, (action_size, action_size))
+                surface.blit(scaled_temp, (0, 0))
+
+                frames.append(surface)
+            animations[state] = frames
+        return animations
+
     def update_animation(self):
         current_time = pygame.time.get_ticks()
 
@@ -109,13 +145,18 @@ class Character:
             if current_time - self.chop_timer > AXE_ANIMATIONS_DELAY:
                 self.chop_timer = current_time
                 self.chop_frame = (self.chop_frame + 1) % AXE_FRAMES
-                if self.chop_frame == 0: # Animation completed
-                    self.is_chopping = False
 
-        animation_speed = RUNNING if self.is_running else ANIMATION_DELAY
-        if current_time - self.animation_timer > animation_speed:
-            self.animation_timer = current_time
-            self.animation_frame = (self.animation_frame + 1) % 6
+        elif self.is_hoeing:
+            if current_time - self.hoe_timer > HOE_ANIMATION_DELAY:
+                self.hoe_timer = current_time
+                self.hoe_frame = (self.hoe_frame + 1) % HOE_FRAMES
+            if self.hoe_frame == 0: # Animation completed
+                        self.is_hoeing = False
+        else:
+            animation_speed = RUNNING if self.is_running else ANIMATION_DELAY
+            if current_time - self.animation_timer > animation_speed:
+                self.animation_timer = current_time
+                self.animation_frame = (self.animation_frame + 1) % 6
 
     #Draw the character on the screen
     #Dibuja el personaje en la pantalla
@@ -124,7 +165,7 @@ class Character:
         screen_y = self.y - camera_y
 
         if self.is_chopping:
-            # Selecciona la animación de hacha según la dirección
+            # Animación de hacha
             if self.current_state in [IDLE_RIGHT, WALK_RIGHT] or (self.current_state == WALK_RIGHT and self.facing_left):
                 current_frame = self.axe_animations[3][self.chop_frame]
                 if self.facing_left:
@@ -137,10 +178,28 @@ class Character:
                 current_frame = self.animations[self.current_state][self.animation_frame]
 
             frame_rect = current_frame.get_rect()
-            # Centra el frame de acción sobre el personaje
             offset_x = (frame_rect.width - constants.PLAYER) // 2
             offset_y = (frame_rect.height - constants.PLAYER)
             screen.blit(current_frame, (screen_x - offset_x, screen_y - offset_y))
+
+        elif self.is_hoeing:
+            # Animación de azada (hoe)
+            if self.current_state in [IDLE_RIGHT, WALK_RIGHT] or (self.current_state == WALK_RIGHT and self.facing_left):
+                current_frame = self.hoe_animations[3][self.hoe_frame]
+                if self.facing_left:
+                    current_frame = pygame.transform.flip(current_frame, True, False)
+            elif self.current_state in [IDLE_DOWN, WALK_DOWN]:
+                current_frame = self.hoe_animations[4][self.hoe_frame]
+            elif self.current_state in [IDLE_UP, WALK_UP]:
+                current_frame = self.hoe_animations[5][self.hoe_frame]
+            else:
+                current_frame = self.animations[self.current_state][self.animation_frame]
+
+            frame_rect = current_frame.get_rect()
+            offset_x = (frame_rect.width - constants.PLAYER) // 2
+            offset_y = (frame_rect.height - constants.PLAYER)
+            screen.blit(current_frame, (screen_x - offset_x, screen_y - offset_y))
+
         else:
             current_frame = self.animations[self.current_state][self.animation_frame]
             if self.facing_left:
@@ -226,6 +285,13 @@ class Character:
     #Interact with the world, collecting resources from trees, stones, and flowers
     #Interacciona con el mundo, recolectando recursos de árboles, piedras y flores
     def interact(self, world):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_q] and self.inventory.has_hoe_equipped():
+            self.is_hoeing = True
+            self.hoe_timer = pygame.time.get_ticks()
+            self.hoe_frame = 0
+            return
+        
         for chunk in world.active_chunks.values():
             # Árboles
             for tree in chunk.trees[:]:

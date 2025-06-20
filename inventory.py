@@ -284,7 +284,12 @@ class Inventory:
         return (
             (self.left_hand and self.left_hand.name == 'axe') or
             (self.right_hand and self.right_hand.name == 'axe')
-
+        )
+    
+    def has_hoe_equipped(self):
+        return (
+            (self.left_hand and self.left_hand.name == 'hoe') or
+            (self.right_hand and self.right_hand.name == 'hoe')
         )
     def _return_dragged_item(self):  # 1 usage
     # Intentar devolver al hotbar primero
