@@ -17,6 +17,7 @@ def main():
     world = World(constants.WIDTH, constants.HEIGHT)
     character = Character(constants.WIDTH // 2, constants.HEIGHT // 2)
     show_inventory = False
+    show_coordinates = False
 
     status_update_timer = 0 
     camera_x = 0
@@ -43,6 +44,8 @@ def main():
                     show_inventory = not show_inventory
                     if not show_inventory:
                         character.inventory.clear_crafting_grid()
+                elif event.key == pygame.K_c:
+                    show_coordinates = not show_coordinates
                 elif event.key == pygame.K_x:  # Usar la azada con X
                     if not show_inventory and character.inventory.has_hoe_equipped():
                         character.is_hoeing = True
@@ -136,6 +139,9 @@ def main():
         screen.blit(stamina_text, (10, constants.HEIGHT - 40))
         screen.blit(time_text, (10, constants.HEIGHT - 15))
         
+        if show_coordinates:
+            coord_text = font.render(f"X: {int(character.x)}, Y: {int(character.y)}", True, constants.WHITE)
+            screen.blit(coord_text, (10, constants.HEIGHT - 140))
 
         pygame.display.flip()
 
