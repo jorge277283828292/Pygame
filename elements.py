@@ -111,12 +111,11 @@ class FarmLand:
         farmland_path = os.path.join('assets', 'images', 'objects', 'FarmLand.png')
         self.image = pygame.image.load(farmland_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (constants.GRASS, constants.GRASS))
-        self.size = constants.GRASS
+        self.size = self.image.get_width()
 
     def draw(self, screen, camera_x, camera_y):
         screen_x = self.x - camera_x
         screen_y = self.y - camera_y
-        screen.blit(self.image, (screen_x, screen_y))
 
         if(screen_x + self.size >= 0 and screen_x <= constants.WIDTH and
                 screen_y + self.size >= 0 and screen_y <= constants.HEIGHT):

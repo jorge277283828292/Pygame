@@ -270,7 +270,7 @@ class World:
             self.day_overlay.set_alpha(alpha)
 
         # Night (18:30 a 6:00)
-        #Noche completa
+        #Noche completa 
         else:
             self.day_overlay.fill(constants.NIGHT_COLOR)
             self.day_overlay.set_alpha(constants.MAX_NIGHT_ALPHA)
@@ -352,25 +352,21 @@ class World:
         return all_grasses
     
     def add_farmland(self, x, y):
+        grid_x = (x // constants.GRASS) * constants.GRASS
+        grid_y = (y // constants.GRASS) * constants.GRASS
+    
         chunk_key = self.get_chunk_key(x, y)
         chunk = self.active_chunks.get(chunk_key)
 
         if chunk:   
-            grid_x = (x // constants.GRASS) * constants.GRASS
-            grid_y = (y // constants.GRASS) * constants.GRASS
-
-            all_objects = (chunk.trees + chunk.small_stones + chunk.Roses + 
-                            chunk.Roses_Yellow + chunk.flowers)
-
-            for obj in all_objects:
+            for obj in [*chunk.trees, *chunk.small_stones, *chunk.Roses, *chunk.Roses_Yellow]:
                 if (grid_x < obj.x + obj.size and grid_x + constants.GRASS > obj.x and
                     grid_y < obj.y + obj.size and grid_y + constants.GRASS > obj.y):
-                    return False      
+                    return False           
 
             tile_key = (grid_x, grid_y)
             if tile_key not in chunk.farmland_tiles:
                 chunk.farmland_tiles[tile_key] = FarmLand(grid_x, grid_y)
-                print(f"FarmLand creado en posición: {grid_x}, {grid_y}")
                 return True
         return False
                 

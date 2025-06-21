@@ -48,6 +48,22 @@ def main():
                         character.is_hoeing = True
                         character.hoe_timer = pygame.time.get_ticks()
                         character.hoe_frame = 0
+
+                        if character.current_state in [constants.IDLE_RIGHT, constants.WALK_RIGHT]:
+                            target_x = character.x + constants.PLAYER if not character.facing_left else character.x - constants.PLAYER
+                            target_y = character.y
+                        elif character.current_state in [constants.IDLE_UP, constants.WALK_UP]:
+                            target_x = character.x
+                            target_y = character.y - constants.PLAYER
+                        elif character.current_state in [constants.IDLE_DOWN, constants.WALK_DOWN]:
+                            target_x = character.x
+                            target_y = character.y + constants.PLAYER
+                        else:
+                            target_x = character.x
+                            target_y = character.y
+                
+                        world.add_farmland(target_x, target_y)
+
                 elif event.key == pygame.K_f:
                     character.update_food(20)
                 elif event.key == pygame.K_t:

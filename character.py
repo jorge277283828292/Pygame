@@ -291,11 +291,21 @@ class Character:
             self.is_hoeing = True
             self.hoe_timer = pygame.time.get_ticks()
             self.hoe_frame = 0
-            print(f"Intentando crear FarmLand en: {self.x}, {self.y}")
-            if world.add_farmland(self.x, self.y):
-                print("FarmLand creado exitosamente")
+            
+            if self.current_state in [IDLE_RIGHT, WALK_RIGHT]:
+                target_x = self.x + constants.PLAYER if not self.facing_left else self.x - constants.PLAYER
+                target_y = self.y
+            elif self.current_state in [IDLE_UP, WALK_UP]:
+                target_x = self.x
+                target_y = self.y - constants.PLAYER
+            elif self.current_state in [IDLE_DOWN, WALK_DOWN]:
+                target_x = self.x
+                target_y = self.y + constants.PLAYER
             else:
-                print("No se pudo crear FarmLand (posible colisión)")
+                target_x = self.x
+                target_y = self.y
+                
+            world.add_farmland(target_x, target_y)
             return
         
         for chunk in world.active_chunks.values():
