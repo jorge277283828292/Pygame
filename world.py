@@ -178,6 +178,7 @@ class World:
     def __init__(self, width, height):
         self.chunk_size = constants.WIDTH
         self.active_chunks = {}
+        self.inactive_chunks = {}
 
         self.view_width = width
         self.view_height = height
@@ -212,25 +213,37 @@ class World:
     
     def update_chunks(self, player_x, player_y):
         current_chunk = self.get_chunk_key(player_x, player_y)
-
-        # Generate the current chunk if it doesn't exist
-        for dx in [-2, -1, 0, 1, 2]:
-            for dy in [-2, -1, 0, 1, 2]:
+        
+        # Activar chunks cercanos (3x3 alrededor del jugador)
+        for dx in [-1, 0, 1]:  # Cambiado de [-2,-1,0,1,2] a [-1,0,1] para un área más manejable
+            for dy in [-1, 0, 1]:
                 chunk_x = current_chunk[0] + dx
                 chunk_y = current_chunk[1] + dy
-                self.generate_chunk(chunk_x, chunk_y)
+                key = (chunk_x, chunk_y)
+                
+                if key not in self.active_chunks:
+                    # Verificar si el chunk existe en inactive_chunks
+                    if key in self.inactive_chunks:
+                        # Recuperar el chunk inactivo manteniendo sus cambios
+                        self.active_chunks[key] = self.inactive_chunks[key]
+                        del self.inactive_chunks[key]
+                    else:
+                        # Crear un nuevo chunk si no existe
+                        x = chunk_x * self.chunk_size
+                        y = chunk_y * self.chunk_size
+                        self.active_chunks[key] = WorldChunk(x, y, self.chunk_size, self.chunk_size)
 
-        #Delete chunks that are too far away
-        chunks_to_delete = []
-        for chunk_key in self.active_chunks:
+        # Desactivar chunks lejanos (fuera del área 3x3)
+        chunks_to_move = []
+        for chunk_key in list(self.active_chunks.keys()):  # Usamos list() para evitar modificar durante iteración
             distance_x = abs(chunk_key[0] - current_chunk[0])
             distance_y = abs(chunk_key[1] - current_chunk[1])
-            if distance_x > 2 or distance_y > 2:
-                chunks_to_delete.append(chunk_key)
+            if distance_x > 1 or distance_y > 1:  # Cambiado de >2 a >1 para coincidir con el área 3x3
+                chunks_to_move.append(chunk_key)
 
-        for chunk_key in chunks_to_delete:  
+        for chunk_key in chunks_to_move:
+            self.inactive_chunks[chunk_key] = self.active_chunks[chunk_key]
             del self.active_chunks[chunk_key]
-
     #Update the time 
     #Actualiza el tiempo (día/noche)
     def update_time(self, dt):
