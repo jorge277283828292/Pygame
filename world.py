@@ -6,6 +6,7 @@ import os
 from pygame import Surface
 
 class WorldChunk:
+    
     def __init__(self, x, y, width, height):
         self.x = x
         self.y = y
@@ -18,52 +19,94 @@ class WorldChunk:
         old_state = random.getstate()
         random.seed(chunk_seed)
         
-        #Yellow Roses
-        #Rosas Amarillas
-        self.Roses_Yellow = [
-            RoseYellow(
-            self.x + random.randint(0, width - constants.FLOWER),
-            self.y + random.randint(0, width - constants.FLOWER)
-            ) for _ in range(10)
-        ]
-        #Roses
-        #Rosas
-        self.Roses = [
-            Rose(
-            self.x + random.randint(0, width - constants.FLOWER),
-            self.y + random.randint(0, width - constants.FLOWER)
-            ) for _ in range(10)
-        ]
-
-        #Flowers
-        #Flores
-        self.flowers = [
-            Flower(
-            self.x + random.randint(0, width - constants.FLOWER),
-            self.y + random.randint(0, height - constants.FLOWER)
-            ) for _ in range(10)
-        ]
-
-        #Grass
-        #Cesped
+        # Lista para llevar registro de todos los objetos generados
+        all_objects = []
+        
+        # Generar árboles primero (son los objetos más grandes)
+        self.trees = []
+        for _ in range(10):
+            attempts = 0
+            while attempts < 20:  # Intentar hasta 20 veces encontrar posición válida
+                tree_x = self.x + random.randint(0, width - constants.TREE)
+                tree_y = self.y + random.randint(0, height - constants.TREE)
+                if self._is_position_valid(tree_x, tree_y, constants.TREE, all_objects):
+                    tree = Tree(tree_x, tree_y)
+                    self.trees.append(tree)
+                    all_objects.append(tree)
+                    break
+                attempts += 1
+        
+        # Generar piedras
+        self.small_stones = []
+        for _ in range(10):
+            attempts = 0
+            while attempts < 20:
+                stone_x = self.x + random.randint(0, width - constants.SMALL_STONE)
+                stone_y = self.y + random.randint(0, height - constants.SMALL_STONE)
+                if self._is_position_valid(stone_x, stone_y, constants.SMALL_STONE, all_objects):
+                    stone = SmallStone(stone_x, stone_y)
+                    self.small_stones.append(stone)
+                    all_objects.append(stone)
+                    break
+                attempts += 1
+        
+        # Generar rosas amarillas
+        self.Roses_Yellow = []
+        for _ in range(10):
+            attempts = 0
+            while attempts < 20:
+                rose_x = self.x + random.randint(0, width - constants.FLOWER)
+                rose_y = self.y + random.randint(0, width - constants.FLOWER)
+                if self._is_position_valid(rose_x, rose_y, constants.FLOWER, all_objects):
+                    rose = RoseYellow(rose_x, rose_y)
+                    self.Roses_Yellow.append(rose)
+                    all_objects.append(rose)
+                    break
+                attempts += 1
+        
+        # Generar rosas
+        self.Roses = []
+        for _ in range(10):
+            attempts = 0
+            while attempts < 20:
+                rose_x = self.x + random.randint(0, width - constants.FLOWER)
+                rose_y = self.y + random.randint(0, width - constants.FLOWER)
+                if self._is_position_valid(rose_x, rose_y, constants.FLOWER, all_objects):
+                    rose = Rose(rose_x, rose_y)
+                    self.Roses.append(rose)
+                    all_objects.append(rose)
+                    break
+                attempts += 1
+        
+        # Generar flores
+        self.flowers = []
+        for _ in range(10):
+            attempts = 0
+            while attempts < 20:
+                flower_x = self.x + random.randint(0, width - constants.FLOWER)
+                flower_y = self.y + random.randint(0, height - constants.FLOWER)
+                if self._is_position_valid(flower_x, flower_y, constants.FLOWER, all_objects):
+                    flower = Flower(flower_x, flower_y)
+                    self.flowers.append(flower)
+                    all_objects.append(flower)
+                    break
+                attempts += 1
+        
+        # Generar pasto (estos pueden superponerse con otros objetos pequeños)
         self.grasses1 = [
             Grass1(
                 self.x + random.randint(0, width - constants.GRASS_OBJ),
                 self.y + random.randint(0, height - constants.GRASS_OBJ)
             ) for _ in range(30)
         ]
-
-        #Grass
-        #Cesped
+        
         self.grasses2 = [
             Grass2(
                 self.x + random.randint(0, width - constants.GRASS_OBJ),
                 self.y + random.randint(0, height - constants.GRASS_OBJ)
             ) for _ in range(30)
         ]
-
-        #Grass
-        #Cesped
+        
         self.grasses3 = [
             Grass3(
                 self.x + random.randint(0, width - constants.GRASS_OBJ),
@@ -71,27 +114,8 @@ class WorldChunk:
             ) for _ in range(30)
         ]
 
-        #Grass
-        #Cesped
-        self.trees = [ 
-            Tree(
-                self.x + random.randint(0, width-constants.TREE),
-                self.y + random.randint(0, height-constants.TREE)
-            ) for _ in range(10)
-        ]
-
-        #Grass
-        #Cesped
-        self.small_stones = [
-        SmallStone(
-            self.x + random.randint(0, width-constants.SMALL_STONE),
-            self.y + random.randint(0, height-constants.SMALL_STONE)
-            ) for _ in range(10)
-        ]
-
         # Generar agua (lagos pequeños)
         if random.random() < constants.WATER_GENERATION_PROBABILITY:
-            # Crear un lago circular
             center_x = self.x + random.randint(0, width)
             center_y = self.y + random.randint(0, height)
             radius = random.randint(3, 8) * constants.GRASS
@@ -99,22 +123,46 @@ class WorldChunk:
             # Crear tiles de agua en un patrón circular
             for y_offset in range(-int(radius), int(radius) + 1, constants.GRASS):
                 for x_offset in range(-int(radius), int(radius) + 1, constants.GRASS):
-                    # Calcular posición del tile
-                    tile_x = center_x + x_offset
-                    tile_y = center_y + y_offset
-
-                    # Verificar si está dentro del círculo y dentro del chunk
-                    if ((x_offset ** 2 + y_offset ** 2) <= radius ** 2 and
-                            self.x <= tile_x < self.x + width and
-                            self.y <= tile_y < self.y + height):
+                    if (x_offset ** 2 + y_offset ** 2) <= radius ** 2:
+                        tile_x = center_x + x_offset
+                        tile_y = center_y + y_offset
                         
+                        # Verificar que esté dentro del chunk
+                        if (self.x <= tile_x < self.x + width and
+                            self.y <= tile_y < self.y + height):
+                            
                             grid_x = (tile_x // constants.GRASS) * constants.GRASS
                             grid_y = (tile_y // constants.GRASS) * constants.GRASS
-
                             tile_key = (grid_x, grid_y)
-                            self.water_tiles[tile_key] = Water(grid_x, grid_y)
+                            
+                            # Verificar que no haya objetos importantes en esta posición
+                            valid_position = True
+                            for obj in all_objects:
+                                obj_rect = pygame.Rect(obj.x, obj.y, obj.size, obj.size)
+                                water_rect = pygame.Rect(grid_x, grid_y, constants.GRASS, constants.GRASS)
+                                if obj_rect.colliderect(water_rect):
+                                    valid_position = False
+                                    break
+                            
+                            if valid_position:
+                                self.water_tiles[tile_key] = Water(grid_x, grid_y)
 
         random.setstate(old_state)
+    def _is_position_valid(self, x, y, size, existing_objects):
+        new_rect = pygame.Rect(x, y, size, size)
+        
+        for obj in existing_objects:
+            obj_rect = pygame.Rect(obj.x, obj.y, obj.size, obj.size)
+            if new_rect.colliderect(obj_rect):
+                return False
+        
+        # Verificar colisión con agua
+        grid_x = (x // constants.GRASS) * constants.GRASS
+        grid_y = (y // constants.GRASS) * constants.GRASS
+        if (grid_x, grid_y) in self.water_tiles:
+            return False
+            
+        return True
 
     def draw(self, screen, grass_image, camera_x, camera_y):
     # Dibuja el fondo de césped como un mosaico

@@ -32,7 +32,8 @@ class Inventory:
             'axe' : os.path.join('assets', 'images', 'objects', 'axe.png'),
             'bunch': os.path.join('assets', 'images', 'objects', 'bunch.png'),
             'stick': os.path.join('assets', 'images', 'objects', 'stick_stone.png'),
-            'hoe': os.path.join('assets', 'images', 'objects', 'hoe.png')
+            'hoe': os.path.join('assets', 'images', 'objects', 'hoe.png'),
+            'bucket':  os.path.join('assets', 'images', 'objects', 'bucket.png'),
         }
 
         self.recipes = {
@@ -51,6 +52,10 @@ class Inventory:
             'hoe': {
                 'pattern': [(None, 'wood'), ('stone', 'stone')], 
                 'result': 'hoe'
+            },
+            'bucket': {
+                'pattern': [(None, 'wood'), ('wood', 'stone')], 
+                'result': 'bucket'
             }
         }
     
@@ -291,6 +296,13 @@ class Inventory:
             (self.left_hand and self.left_hand.name == 'hoe') or
             (self.right_hand and self.right_hand.name == 'hoe')
         )
+    
+    def has_bucket_equipped(self):
+        return (
+            (self.left_hand and self.left_hand.name == 'bucket') or
+            (self.right_hand and self.right_hand.name == 'bucket')
+        )
+    
     def _return_dragged_item(self):  # 1 usage
     # Intentar devolver al hotbar primero
         for i, slot in enumerate(self.hotbar):

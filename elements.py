@@ -128,10 +128,10 @@ class Water:
         self.x = x
         self.y = y
         self.size = constants.GRASS
-        self.time = 0  # Para controlar la animación
+        self.time = 0
 
     def update(self, dt):
-        self.time += dt * 0.002  # Velocidad del movimiento (ajústala)
+        self.time += dt * 0.002
 
     def draw(self, screen, camera_x, camera_y):
         screen_x = self.x - camera_x
@@ -139,10 +139,8 @@ class Water:
 
         if (screen_x + self.size >= 0 and screen_x <= constants.WIDTH and
                 screen_y + self.size >= 0 and screen_y <= constants.HEIGHT):
-
             water_surface = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
-            water_surface.fill((*constants.WATER_COLOR, 180))  # Color liso con transparencia
-
-            # Efecto de movimiento: desplazamiento vertical suave
+            water_surface.fill((*constants.WATER_COLOR, 180))
+            
             wave_offset = int(math.sin(self.time) * 1.5)
             screen.blit(water_surface, (screen_x, screen_y + wave_offset))
