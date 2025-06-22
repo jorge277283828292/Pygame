@@ -91,28 +91,45 @@ class WorldChunk:
                     all_objects.append(flower)
                     break
                 attempts += 1
-        
-        # Generar pasto (estos pueden superponerse con otros objetos pequeños)
-        self.grasses1 = [
-            Grass1(
-                self.x + random.randint(0, width - constants.GRASS_OBJ),
-                self.y + random.randint(0, height - constants.GRASS_OBJ)
-            ) for _ in range(30)
-        ]
-        
-        self.grasses2 = [
-            Grass2(
-                self.x + random.randint(0, width - constants.GRASS_OBJ),
-                self.y + random.randint(0, height - constants.GRASS_OBJ)
-            ) for _ in range(30)
-        ]
-        
-        self.grasses3 = [
-            Grass3(
-                self.x + random.randint(0, width - constants.GRASS_OBJ),
-                self.y + random.randint(0, height - constants.GRASS_OBJ)
-            ) for _ in range(30)
-        ]
+
+        self.grasses1 = []
+        for _ in range(10):
+            attempts = 0
+            while attempts < 20:
+                grass1_x = self.x + random.randint(0, width - constants.GRASS_OBJ)
+                grass1_y = self.y + random.randint(0, height - constants.GRASS_OBJ)
+                if self._is_position_valid(grass1_x, grass1_y, constants.GRASS_OBJ, all_objects):
+                    grasss1 = Grass1(grass1_x, grass1_y)
+                    self.grasses1.append(grasss1)
+                    all_objects.append(grasss1)
+                    break
+                attempts += 1
+
+        self.grasses2 = []
+        for _ in range(10):
+            attempts = 0
+            while attempts < 20:
+                grass2_x = self.x + random.randint(0, width - constants.GRASS_OBJ)
+                grass2_y = self.y + random.randint(0, height - constants.GRASS_OBJ)
+                if self._is_position_valid(grass2_x, grass2_y, constants.GRASS_OBJ, all_objects):
+                    grasss2 = Grass2(grass1_x, grass1_y)
+                    self.grasses2.append(grasss2)
+                    all_objects.append(grasss2)
+                    break
+                attempts += 1
+
+        self.grasses3 = []
+        for _ in range(10):
+            attempts = 0
+            while attempts < 20:
+                grass3_x = self.x + random.randint(0, width - constants.GRASS_OBJ)
+                grass3_y = self.y + random.randint(0, height - constants.GRASS_OBJ)
+                if self._is_position_valid(grass3_x, grass3_y, constants.GRASS_OBJ, all_objects):
+                    grasss3 = Grass3(grass3_x, grass3_y)
+                    self.grasses3.append(grasss3)
+                    all_objects.append(grasss3)
+                    break
+                attempts += 1
 
         # Generar agua (lagos pequeños)
         if random.random() < constants.WATER_GENERATION_PROBABILITY:
