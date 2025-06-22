@@ -1,7 +1,7 @@
 import random
 import pygame
 import constants
-from elements import Tree, SmallStone, Flower, Rose, RoseYellow, Grass1, Grass2, Grass3, FarmLand
+from elements import Tree, SmallStone, Flower, Rose, RoseYellow, Grass1, Grass2, Grass3, FarmLand, Water
 import os
 from pygame import Surface
 
@@ -12,6 +12,7 @@ class WorldChunk:
         self.width = width
         self.height = height
         self.farmland_tiles = {}
+        self.water_tiles = {}
 
         chunk_seed = hash(f"{x},{y}")
         old_state = random.getstate()
@@ -87,9 +88,34 @@ class WorldChunk:
             self.y + random.randint(0, height-constants.SMALL_STONE)
             ) for _ in range(10)
         ]
-            
+
+        # Generar agua (lagos pequeños)
+        if random.random() < constants.WATER_GENERATION_PROBABILITY:
+            # Crear un lago circular
+            center_x = self.x + random.randint(0, width)
+            center_y = self.y + random.randint(0, height)
+            radius = random.randint(3, 8) * constants.GRASS
+
+            # Crear tiles de agua en un patrón circular
+            for y_offset in range(-int(radius), int(radius) + 1, constants.GRASS):
+                for x_offset in range(-int(radius), int(radius) + 1, constants.GRASS):
+                    # Calcular posición del tile
+                    tile_x = center_x + x_offset
+                    tile_y = center_y + y_offset
+
+                    # Verificar si está dentro del círculo y dentro del chunk
+                    if ((x_offset ** 2 + y_offset ** 2) <= radius ** 2 and
+                            self.x <= tile_x < self.x + width and
+                            self.y <= tile_y < self.y + height):
+                        
+                            grid_x = (tile_x // constants.GRASS) * constants.GRASS
+                            grid_y = (tile_y // constants.GRASS) * constants.GRASS
+
+                            tile_key = (grid_x, grid_y)
+                            self.water_tiles[tile_key] = Water(grid_x, grid_y)
+
         random.setstate(old_state)
-    
+
     def draw(self, screen, grass_image, camera_x, camera_y):
     # Dibuja el fondo de césped como un mosaico
     # ...luego dibuja los objetos del mundo como siempre...
@@ -111,10 +137,11 @@ class WorldChunk:
                 screen_y = tile_y - camera_y
 
                 tile_key = (tile_x, tile_y)
-                if tile_key in self.farmland_tiles:
-                    self.farmland_tiles[tile_key].draw(screen, camera_x, camera_y)
-                else:
-                    screen.blit(grass_image, (screen_x, screen_y))
+                if tile_key not in self.water_tiles:
+                    if tile_key in self.farmland_tiles:
+                        self.farmland_tiles[tile_key].draw(screen, camera_x, camera_y)
+                    else:
+                        screen.blit(grass_image, (screen_x, screen_y))
 
         for stone in self.small_stones:
             stone_screen_x = stone.x - camera_x
@@ -171,7 +198,14 @@ class WorldChunk:
             if (grass_screen_x + grass.size >= 0 and grass_screen_x <= constants.WIDTH and 
                 grass_screen_y + grass.size >= 0 and grass_screen_y <= constants.HEIGHT):
                 grass.draw(screen, camera_x, camera_y)
+
+        for tile_key, water in self.water_tiles.items():
+            water.draw(screen, camera_x, camera_y)
         
+    def update(self, dt):
+        for water in self.water_tiles.values():
+            water.update(dt)
+
 # World class to manage the game world, including trees, stones, flowers
 # Clase World para manejar el mundo del juego, incluyendo árboles, piedras y flores
 class World:
@@ -287,6 +321,9 @@ class World:
         else:
             self.day_overlay.fill(constants.NIGHT_COLOR)
             self.day_overlay.set_alpha(constants.MAX_NIGHT_ALPHA)
+        
+        for chunk in self.active_chunks.values():
+            chunk.update(dt)
 
     # Draw the world elements on the screen
     # Dibuja los elementos del mundo en la pantalla
@@ -364,6 +401,13 @@ class World:
             all_grasses.extend(chunk.grasses3)
         return all_grasses
     
+    @property
+    def water_tiles(self):
+        all_water = {}
+        for chunk in self.active_chunks.values():
+            all_water.update(chunk.water_tiles)
+        return all_water
+
     def add_farmland(self, x, y):
         grid_x = (x // constants.GRASS) * constants.GRASS
         grid_y = (y // constants.GRASS) * constants.GRASS
@@ -378,8 +422,26 @@ class World:
                     return False           
 
             tile_key = (grid_x, grid_y)
+            if tile_key in chunk.water.tiles:
+                return False
+
             if tile_key not in chunk.farmland_tiles:
                 chunk.farmland_tiles[tile_key] = FarmLand(grid_x, grid_y)
                 return True
         return False
+    
+    def is_water_at(self, x, y):
+        chunk_key = self.get_chunk_key(x, y)
+        chunk = self.active_chunks.get(chunk_key)
+
+        if chunk:
+            grid_x = (x // constants.GRASS) * constants.GRASS
+            grid_y = (y // constants.GRASS) * constants.GRASS
+
+            tile_key = (grid_x, grid_y)
+            return tile_key in chunk.water_tiles
+
+        return False
+
                 
+        

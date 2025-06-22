@@ -1,6 +1,8 @@
 import pygame
 import constants
 import os
+import math
+import random
 
 #Master Class
 #Clase base para los elementos del juego
@@ -120,3 +122,27 @@ class FarmLand:
         if(screen_x + self.size >= 0 and screen_x <= constants.WIDTH and
                 screen_y + self.size >= 0 and screen_y <= constants.HEIGHT):
             screen.blit(self.image, (screen_x, screen_y))
+
+class Water:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.size = constants.GRASS
+        self.time = 0  # Para controlar la animación
+
+    def update(self, dt):
+        self.time += dt * 0.002  # Velocidad del movimiento (ajústala)
+
+    def draw(self, screen, camera_x, camera_y):
+        screen_x = self.x - camera_x
+        screen_y = self.y - camera_y
+
+        if (screen_x + self.size >= 0 and screen_x <= constants.WIDTH and
+                screen_y + self.size >= 0 and screen_y <= constants.HEIGHT):
+
+            water_surface = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
+            water_surface.fill((*constants.WATER_COLOR, 180))  # Color liso con transparencia
+
+            # Efecto de movimiento: desplazamiento vertical suave
+            wave_offset = int(math.sin(self.time) * 1.5)
+            screen.blit(water_surface, (screen_x, screen_y + wave_offset))

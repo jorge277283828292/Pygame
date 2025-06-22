@@ -206,12 +206,18 @@ class Character:
             if self.facing_left:
                 current_frame = pygame.transform.flip(current_frame, True, False)
             screen.blit(current_frame, (screen_x, screen_y))
-
+            
+    def is_in_water(self, world):
+        return world.is_water_at(self.x + constants.PLAYER // 2, self.y + constants.PLAYER // 2)
     #Move the character, checking for collisions with trees
     #Mueve el personaje, comprobando colisiones con árboles
     def move(self, dx, dy, world):
         self.moving = dx != 0 or dy != 0
+        speed_multiplier = 1.0
 
+        if self.is_in_water(world):
+            speed_multiplier *= constants.WATER_MOVE_MULTIPLIER
+        
         if self.moving:
             speed_multiplier = RUN_SPEED if self.is_running and self.stamina > 0 else WALK_SPEED
             dx *= speed_multiplier / WALK_SPEED
@@ -287,6 +293,11 @@ class Character:
     #Interacciona con el mundo, recolectando recursos de árboles, piedras y flores
     def interact(self, world):
         keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_q] and self.is_in_water(world):
+            self.update_thirst(constants.WATER_THIRST_RECOVERY)
+            return
+
         if keys[pygame.K_q] and self.inventory.has_hoe_equipped() and not self.is_hoeing:
             self.is_hoeing = True
             self.hoe_timer = pygame.time.get_ticks()
@@ -403,6 +414,12 @@ class Character:
         pygame.draw.rect(screen, constants.BAR_BACKGROUND_COLOR, (x_offset, y_offset, bar_width, bar_height))
         pygame.draw.rect(screen, constants.STAMINA_COLOR, (x_offset, y_offset, bar_width * (self.stamina / constants.MAX_STAMINA), bar_height))
         y_offset += bar_height + 5
+
+        font = pygame.font.Font(None, 20)
+        if hasattr(self, 'in_water') and self.in_water:
+            water_text = font.render("Press 'Q' to drink water", True, constants.WHITE)
+            screen.blit(water_text, (x_offset, y_offset + 25))
+
 # Update the character's status over time
 # Actualiza el estado del personaje con el tiempo
     def update_status(self):
