@@ -14,11 +14,19 @@ class WorldChunk:
         self.height = height
         self.farmland_tiles = {}
         self.water_tiles = {}
+        self.forbidden_zones = set() 
+
 
         chunk_seed = hash(f"{x},{y}")
         old_state = random.getstate()
         random.seed(chunk_seed)
         
+        self._generate_water(width, height)
+    
+        # LUEGO generamos los objetos, evitando las zonas de agua
+        self._generate_objects(width, height)
+
+        random.setstate(old_state)
         # Lista para llevar registro de todos los objetos generados
         all_objects = []
         
@@ -133,52 +141,95 @@ class WorldChunk:
 
         # Generar agua (lagos pequeños)
         if random.random() < constants.WATER_GENERATION_PROBABILITY:
-            center_x = self.x + random.randint(0, width)
-            center_y = self.y + random.randint(0, height)
-            radius = random.randint(3, 8) * constants.GRASS
-
-            # Crear tiles de agua en un patrón circular
-            for y_offset in range(-int(radius), int(radius) + 1, constants.GRASS):
-                for x_offset in range(-int(radius), int(radius) + 1, constants.GRASS):
-                    if (x_offset ** 2 + y_offset ** 2) <= radius ** 2:
-                        tile_x = center_x + x_offset
-                        tile_y = center_y + y_offset
-                        
-                        # Verificar que esté dentro del chunk
-                        if (self.x <= tile_x < self.x + width and
-                            self.y <= tile_y < self.y + height):
+            # Determinar tamaño y forma del lago
+            lake_size = random.choice(['small', 'medium', 'large'])
+            if lake_size == 'small':
+                radius = random.randint(2, 4) * constants.GRASS
+                num_lakes = random.randint(1, 2)
+            elif lake_size == 'medium':
+                radius = random.randint(4, 6) * constants.GRASS
+                num_lakes = 1
+            else:  # large
+                radius = random.randint(6, 10) * constants.GRASS
+                num_lakes = 1
+                
+            for _ in range(num_lakes):
+                center_x = self.x + random.randint(radius, width - radius)
+                center_y = self.y + random.randint(radius, height - radius)
+                
+                # Generar forma más orgánica usando algoritmo de círculo con variaciones
+                for dy in range(-radius, radius + constants.GRASS, constants.GRASS):
+                    for dx in range(-radius, radius + constants.GRASS, constants.GRASS):
+                        # Distancia al centro con alguna variación aleatoria
+                        distance = (dx**2 + dy**2)**0.5
+                        if distance <= radius * (0.8 + random.random() * 0.4):  # Variación en el borde
+                            tile_x = center_x + dx
+                            tile_y = center_y + dy
                             
-                            grid_x = (tile_x // constants.GRASS) * constants.GRASS
-                            grid_y = (tile_y // constants.GRASS) * constants.GRASS
-                            tile_key = (grid_x, grid_y)
-                            
-                            # Verificar que no haya objetos importantes en esta posición
-                            valid_position = True
-                            for obj in all_objects:
-                                obj_rect = pygame.Rect(obj.x, obj.y, obj.size, obj.size)
-                                water_rect = pygame.Rect(grid_x, grid_y, constants.GRASS, constants.GRASS)
-                                if obj_rect.colliderect(water_rect):
-                                    valid_position = False
-                                    break
-                            
-                            if valid_position:
-                                self.water_tiles[tile_key] = Water(grid_x, grid_y)
-
-        random.setstate(old_state)
-    def _is_position_valid(self, x, y, size, existing_objects):
-        new_rect = pygame.Rect(x, y, size, size)
+                            # Asegurarse de que está dentro del chunk
+                            if (self.x <= tile_x < self.x + width and
+                                self.y <= tile_y < self.y + height):
+                                
+                                grid_x = (tile_x // constants.GRASS) * constants.GRASS
+                                grid_y = (tile_y // constants.GRASS) * constants.GRASS
+                                tile_key = (grid_x, grid_y)
+                                
+                                # Verificar que no haya objetos importantes
+                                valid_position = True
+                                for obj in all_objects:
+                                    obj_rect = pygame.Rect(obj.x, obj.y, obj.size, obj.size)
+                                    water_rect = pygame.Rect(grid_x, grid_y, constants.GRASS, constants.GRASS)
+                                    if obj_rect.colliderect(water_rect):
+                                        valid_position = False
+                                        break
+                                
+                                if valid_position:
+                                    self.water_tiles[tile_key] = Water(grid_x, grid_y)
+    
+    def clear_objects_in_water(self):
+        """Elimina objetos pequeños que quedaron dentro del agua generada"""
+        objects_to_remove = []
         
+        # Para árboles y piedras (objetos grandes)
+        for tree in self.trees[:]:
+            grid_x = (tree.x // constants.GRASS) * constants.GRASS
+            grid_y = (tree.y // constants.GRASS) * constants.GRASS
+            if (grid_x, grid_y) in self.water_tiles:
+                objects_to_remove.append(tree)
+        
+        for stone in self.small_stones[:]:
+            grid_x = (stone.x // constants.GRASS) * constants.GRASS
+            grid_y = (stone.y // constants.GRASS) * constants.GRASS
+            if (grid_x, grid_y) in self.water_tiles:
+                objects_to_remove.append(stone)
+        
+        # Eliminar los objetos marcados
+        for obj in objects_to_remove:
+            if obj in self.trees:
+                self.trees.remove(obj)
+            elif obj in self.small_stones:
+                self.small_stones.remove(obj)
+            elif obj in self.flowers:
+                self.flowers.remove(obj)
+            elif obj in self.Roses:
+                self.Roses.remove(obj)
+            elif obj in self.Roses_Yellow:
+                self.Roses_Yellow.remove(obj)
+
+    def _is_position_valid(self, x, y, size, existing_objects):
+    # Verificar colisión con zonas prohibidas (agua)
+        grid_x = (x // constants.GRASS) * constants.GRASS
+        grid_y = (y // constants.GRASS) * constants.GRASS
+        if (grid_x, grid_y) in self.forbidden_zones:
+            return False
+        
+        # Verificar colisión con otros objetos
+        new_rect = pygame.Rect(x, y, size, size)
         for obj in existing_objects:
             obj_rect = pygame.Rect(obj.x, obj.y, obj.size, obj.size)
             if new_rect.colliderect(obj_rect):
                 return False
-        
-        # Verificar colisión con agua
-        grid_x = (x // constants.GRASS) * constants.GRASS
-        grid_y = (y // constants.GRASS) * constants.GRASS
-        if (grid_x, grid_y) in self.water_tiles:
-            return False
-            
+                
         return True
 
     def draw(self, screen, grass_image, camera_x, camera_y):
@@ -271,6 +322,83 @@ class WorldChunk:
         for water in self.water_tiles.values():
             water.update(dt)
 
+    def _generate_water(self, width, height):
+    # Probabilidad de generar un lago en este chunk
+        if random.random() < constants.WATER_GENERATION_PROBABILITY:
+            lake_type = random.choice(['small', 'medium', 'large'])
+            
+            if lake_type == 'small':
+                radius = random.randint(2, 4) * constants.GRASS
+                num_lakes = random.randint(1, 3)
+            elif lake_type == 'medium':
+                radius = random.randint(4, 6) * constants.GRASS
+                num_lakes = random.randint(1, 2)
+            else:  # large
+                radius = random.randint(6, 10) * constants.GRASS
+                num_lakes = 1
+
+            for _ in range(num_lakes):
+                center_x = self.x + random.randint(radius, width - radius)
+                center_y = self.y + random.randint(radius, height - radius)
+                
+                # Generar forma orgánica del lago
+                for dy in range(-radius, radius + constants.GRASS, constants.GRASS):
+                    for dx in range(-radius, radius + constants.GRASS, constants.GRASS):
+                        distance = (dx**2 + dy**2)**0.5
+                        if distance <= radius * (0.7 + random.random() * 0.6):  # Forma irregular
+                            tile_x = center_x + dx
+                            tile_y = center_y + dy
+                            
+                            if (self.x <= tile_x < self.x + width and
+                                self.y <= tile_y < self.y + height):
+                                
+                                grid_x = (tile_x // constants.GRASS) * constants.GRASS
+                                grid_y = (tile_y // constants.GRASS) * constants.GRASS
+                                tile_key = (grid_x, grid_y)
+                                
+                                # Marcar esta zona como prohibida
+                                self.forbidden_zones.add((grid_x, grid_y))
+                                self.water_tiles[tile_key] = Water(grid_x, grid_y)
+    
+    def _generate_objects(self, width, height):
+        all_objects = []
+        
+        # Generar árboles
+        self.trees = []
+        for _ in range(10):  # Intentar generar 10 árboles
+            attempts = 0
+            while attempts < 20:
+                tree_x = self.x + random.randint(0, width - constants.TREE)
+                tree_y = self.y + random.randint(0, height - constants.TREE)
+                
+                # Verificar que no esté en zona prohibida
+                grid_x = (tree_x // constants.GRASS) * constants.GRASS
+                grid_y = (tree_y // constants.GRASS) * constants.GRASS
+                if (grid_x, grid_y) not in self.forbidden_zones and self._is_position_valid(tree_x, tree_y, constants.TREE, all_objects):
+                    tree = Tree(tree_x, tree_y)
+                    self.trees.append(tree)
+                    all_objects.append(tree)
+                    break
+                attempts += 1
+        
+        # Generar piedras (mismo patrón que árboles)
+        self.small_stones = []
+        for _ in range(10):
+            attempts = 0
+            while attempts < 20:
+                stone_x = self.x + random.randint(0, width - constants.SMALL_STONE)
+                stone_y = self.y + random.randint(0, height - constants.SMALL_STONE)
+                grid_x = (stone_x // constants.GRASS) * constants.GRASS
+                grid_y = (stone_y // constants.GRASS) * constants.GRASS
+                if (grid_x, grid_y) not in self.forbidden_zones and self._is_position_valid(stone_x, stone_y, constants.SMALL_STONE, all_objects):
+                    stone = SmallStone(stone_x, stone_y)
+                    self.small_stones.append(stone)
+                    all_objects.append(stone)
+                    break
+                attempts += 1
+    
+    # Generar demás objetos (flores, rosas, etc.) con el mismo patrón
+    # ...
 # World class to manage the game world, including trees, stones, flowers
 # Clase World para manejar el mundo del juego, incluyendo árboles, piedras y flores
 class World:
