@@ -34,6 +34,7 @@ class Inventory:
             'stick': os.path.join('assets', 'images', 'objects', 'stick_stone.png'),
             'hoe': os.path.join('assets', 'images', 'objects', 'hoe.png'),
             'bucket':  os.path.join('assets', 'images', 'objects', 'bucket.png'),
+            'water_bucket': os.path.join('assets', 'images', 'objects', 'full_bucket.png')
         }
 
         self.recipes = {
@@ -298,10 +299,38 @@ class Inventory:
         )
     
     def has_bucket_equipped(self):
-        return (
-            (self.left_hand and self.left_hand.name == 'bucket') or
-            (self.right_hand and self.right_hand.name == 'bucket')
-        )
+        if self.left_hand and self.left_hand.name == 'bucket':
+            return True, 'left'
+        if self.right_hand and self.right_hand.name == 'bucket':
+            return True, 'right'
+        return False, None
+    
+    def has_water_bucket_equipped(self):
+        if self.left_hand and self.left_hand.name == 'water_bucket':
+            return True, 'left'
+        if self.right_hand and self.right_hand.name == 'water_bucket':
+            return True, 'right'
+        return False, None
+    
+    def empty_bucket(self, hand):
+        if hand == 'left' and self.left_hand and self.left_hand.name == 'water_bucket':
+            # Reemplazar cubeta llena por cubeta vacía
+            self.left_hand = InventoryItem('bucket', self.item_images['bucket'])
+            return True
+        elif hand == 'right' and self.right_hand and self.right_hand.name == 'water_bucket':
+            # Reemplazar cubeta llena por cubeta vacía
+            self.right_hand = InventoryItem('bucket', self.item_images['bucket'])
+            return True
+        return False
+
+    def fill_bucket(self, hand):    
+        if hand == 'left' and self.left_hand and self.left_hand.name == 'bucket':
+            self.left_hand = InventoryItem('water_bucket', self.item_images['water_bucket'])
+            return True
+        elif hand == 'right' and self.right_hand and self.right_hand.name == 'bucket':
+            self.right_hand = InventoryItem('water_bucket', self.item_images['water_bucket'])
+            return True
+        return False
     
     def _return_dragged_item(self):  # 1 usage
     # Intentar devolver al hotbar primero

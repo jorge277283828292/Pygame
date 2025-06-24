@@ -293,10 +293,27 @@ class Character:
     #Interacciona con el mundo, recolectando recursos de árboles, piedras y flores
     def interact(self, world):
         keys = pygame.key.get_pressed()
+        if keys[pygame.K_p]:
+            in_water = self.is_in_water(world)  # Usar el método existente
+            if in_water:
+                bucket_equipped, hand = self.inventory.has_bucket_equipped()
+                if bucket_equipped:
+                    success = self.inventory.fill_bucket(hand)
+                    if success:
+                        return  # Salir después de llenar la cubeta
+                # Beber agua si no tenemos cubeta equipada
+                self.update_thirst(constants.WATER_THIRST_RECOVERY)
+                return
+            else:
+                # Verificar si tenemos cubeta de agua equipada para vaciarla
+                water_bucket_equipped, hand = self.inventory.has_water_bucket_equipped()
+                if water_bucket_equipped:
+                    self.inventory.empty_bucket(hand)
+                    return
 
-        if keys[pygame.K_q] and self.is_in_water(world):
-            self.update_thirst(constants.WATER_THIRST_RECOVERY)
-            return
+    # Resto del código de interacción...
+
+    # Resto del código de interacción...
 
         if keys[pygame.K_q] and self.inventory.has_hoe_equipped() and not self.is_hoeing:
             self.is_hoeing = True
@@ -318,6 +335,8 @@ class Character:
                 
             world.add_farmland(target_x, target_y)
             return
+    
+    # Resto del código de interacción con objetos...
         
         for chunk in world.active_chunks.values():
             # Árboles

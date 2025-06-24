@@ -28,7 +28,7 @@ def main():
         dt = clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # Close the game
-                pygame.quit()
+                pygame.quit() 
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN: # Handle mouse button events
                 if event.button == 1:  
@@ -44,6 +44,8 @@ def main():
                     show_inventory = not show_inventory
                     if not show_inventory:
                         character.inventory.clear_crafting_grid()
+                elif event.key == pygame.K_p:  # Tecla P para interactuar con agua/cubeta
+                    character.interact(world)
                 elif event.key == pygame.K_c:
                     show_coordinates = not show_coordinates
                 elif event.key == pygame.K_x:  # Usar la azada con X
