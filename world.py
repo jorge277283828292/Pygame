@@ -615,7 +615,7 @@ class World:
                     return False           
 
             tile_key = (grid_x, grid_y)
-            if tile_key in chunk.water.tiles:
+            if tile_key in chunk.water_tiles:
                 return False
 
             if tile_key not in chunk.farmland_tiles:

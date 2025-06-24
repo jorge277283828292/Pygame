@@ -55,7 +55,7 @@ class Inventory:
                 'result': 'hoe'
             },
             'bucket': {
-                'pattern': [(None, 'wood'), ('wood', 'stone')], 
+                'pattern': [('stone', 'wood'), ('wood', 'wood')], 
                 'result': 'bucket'
             }
         }
