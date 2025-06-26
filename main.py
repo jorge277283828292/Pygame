@@ -5,7 +5,15 @@ from character import Character
 from world import World
 
 pygame.init()
+"""
+- Movimiento: Usa las teclas W (arriba), A (izquierda), S (abajo) y D (derecha) para mover a tu personaje por el mapa.
+- Acción/Interacción: El clic izquierdo del ratón es tu herramienta principal. Úsalo para talar árboles, minar piedras, interactuar con objetos y atacar.
+- Inventario: Presiona la tecla E para abrir o cerrar tu inventario. Dentro del inventario, 
+- podrás arrastrar y soltar ítems con el clic izquierdo del ratón para organizarlos, equiparlos o usarlos en la cuadrícula de crafteo.
+- Recoger Ítems: Simplemente camina sobre los ítems que caen al suelo para recogerlos automáticamente y añadirlos a tu inventario, con la tecla 'Espacio'.
+- Coordenadas: Presionando la tecla C podras ver las coordenadas actual de tu personaje.
 
+"""
 # Initialize the game window
 # Inicializa la ventana del juego
 screen = pygame.display.set_mode((constants.WIDTH, constants.HEIGHT))
