@@ -158,7 +158,6 @@ class Grass3(GameElement):
 # Tierra de cultivo
 class FarmLand:
     def __init__(self, x, y):
-<<<<<<< HEAD
         self.x = x # X-coordinate of the farmland tile / Coordenada X del tile de tierra de cultivo
         self.y = y # Y-coordinate of the farmland tile / Coordenada Y del tile de tierra de cultivo
         # Define the image path for farmland
@@ -169,92 +168,18 @@ class FarmLand:
         self.image = pygame.image.load(farmland_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (constants.GRASS, constants.GRASS))
         self.size = self.image.get_width() # Get the actual width of the scaled image / Obtiene el ancho real de la imagen escalada
-=======
-        self.x = x
-        self.y = y
-        self.is_watered = False
-        self.growth_stage = 0  # 0 = tierra arada, 5 = listo para cosechar
-        self.last_update_time = pygame.time.get_ticks()
-        self.size = constants.GRASS
-        self.images = self._load_images()
-
-    def _load_images(self):
-        images = {}
-        for i in range(1, 7):
-            try:
-                path = os.path.join('assets', 'images', 'objects', 'Farm', f'Farmland {i}.png')
-                img = pygame.image.load(path).convert_alpha()
-                images[i] = pygame.transform.scale(img, (self.size, self.size))
-            except:
-                # Crear imagen de placeholder si no existe
-                surf = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
-                color = (139, 69, 19) if i == 1 else (0, 100 + i*20, 0)
-                surf.fill(color)
-                images[i] = surf
-        return images
-
-    def water(self):
-        if not self.is_watered:
-            self.is_watered = True
-            self.last_update_time = pygame.time.get_ticks()
-            return True
-        return False
-
-    def update(self, current_time):
-        if self.is_watered and self.growth_stage < 5:
-            if current_time - self.last_update_time > constants.FARM_GROWTH_TIME:
-                self.growth_stage += 1
-                self.last_update_time = current_time
-                # El agua se evapora después del último crecimiento
-                if self.growth_stage >= 5:
-                    self.is_watered = False
-
-    def harvest(self):
-        if self.growth_stage == 5:
-            self.growth_stage = 0
-            self.is_watered = False
-            return True
-        return False
->>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1
 
     def draw(self, screen, camera_x, camera_y):
         # Calculate the screen coordinates based on the camera position
         # Calcula las coordenadas en pantalla basándose en la posición de la cámara
         screen_x = self.x - camera_x
         screen_y = self.y - camera_y
-        
-        # Dibujar la etapa actual
-        image_key = min(6, max(1, self.growth_stage + 1))
-        screen.blit(self.images[image_key], (screen_x, screen_y))
-        
-    def water(self):
-        if not self.is_watered:
-            self.is_watered = True
-            self.last_update_time= pygame.time.get_ticks()
-            return True
-        
-    def update(self, current_time):
-        if self.is_watered and self.growth_stage < 5:
-            if self.growth_stage == 0:
-                self.growth_stage = 1   
-            if current_time - self.last_update_time > 10000:
-                self.growth_stage = min(5, self.growth_stage + 1)
-                self.last_update_time = current_time
 
-<<<<<<< HEAD
         # Draw the farmland tile only if it's visible on the screen
         # Dibuja el tile de tierra de cultivo solo si es visible en la pantalla
         if(screen_x + self.size >= 0 and screen_x <= constants.WIDTH and
                 screen_y + self.size >= 0 and screen_y <= constants.HEIGHT):
             screen.blit(self.image, (screen_x, screen_y))
-=======
-    def harvest(self):
-        if self.growth_stage >= 5:
-            self.growth_stage= 0
-            self.is_watered = False
-            return True
-        return False
->>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1
 
 # Water
 # Agua

@@ -318,7 +318,6 @@ class Character:
     # Gestiona las interacciones del personaje con el mundo (ej. recolectar recursos, usar herramientas).
     def interact(self, world):
         keys = pygame.key.get_pressed()
-<<<<<<< HEAD
         if keys[pygame.K_p]:
             in_water = self.is_in_water(world)  # Use existing method.
                                                  # Usar el método existente.
@@ -341,83 +340,20 @@ class Character:
                     self.inventory.empty_bucket(hand)
                     return
 
-=======
-
-        # ===== MANEJO DE CUBETA DE AGUA =====
-        bucket_equipped, hand = self.inventory.has_bucket_equipped()
-        water_bucket_equipped, water_hand = self.inventory.has_water_bucket_equipped()
-        
-        # Llenar cubeta en agua
-        if bucket_equipped and keys[pygame.K_q]:
-            if world.is_water_at(self.x + constants.PLAYER//2, self.y + constants.PLAYER//2):
-                self.inventory.fill_bucket(hand)
-                return True
-        
-        # Vaciar cubeta en cultivos
-        elif water_bucket_equipped and keys[pygame.K_q]:
-            grid_x = (self.x // constants.GRASS) * constants.GRASS
-            grid_y = (self.y // constants.GRASS) * constants.GRASS
-            
-            # Regar en un área 3x3
-            watered = False
-            for dx in [-1, 0, 1]:
-                for dy in [-1, 0, 1]:
-                    target_x = grid_x + dx * constants.GRASS
-                    target_y = grid_y + dy * constants.GRASS
-                    
-                    chunk_key = world.get_chunk_key(target_x, target_y)
-                    if chunk_key in world.active_chunks:
-                        chunk = world.active_chunks[chunk_key]
-                        tile_key = (target_x, target_y)
-                        
-                        if tile_key in chunk.farmland_tiles:
-                            if chunk.farmland_tiles[tile_key].water():
-                                watered = True
-            
-            if watered:
-                self.inventory.empty_bucket(water_hand)
-                return True
-
-        # ===== USO DE AZADA =====
->>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1
         if keys[pygame.K_q] and self.inventory.has_hoe_equipped() and not self.is_hoeing:
             self.is_hoeing = True
             self.hoe_timer = pygame.time.get_ticks()
             self.hoe_frame = 0
             
-<<<<<<< HEAD
             # Determine target location for hoeing based on character's direction.
             # Determinar la ubicación objetivo para arar basándose en la dirección del personaje.
             if self.current_state in [IDLE_RIGHT, WALK_RIGHT]:
-=======
-            # Determinar dirección de interacción
-            if self.current_state in [constants.IDLE_RIGHT, constants.WALK_RIGHT]:
->>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1
                 target_x = self.x + constants.PLAYER if not self.facing_left else self.x - constants.PLAYER
                 target_y = self.y
-            elif self.current_state in [constants.IDLE_UP, constants.WALK_UP]:
+            elif self.current_state in [IDLE_UP, WALK_UP]:
                 target_x = self.x
                 target_y = self.y - constants.PLAYER
-            elif self.current_state in [constants.IDLE_DOWN, constants.WALK_DOWN]:
-                target_x = self.x
-                target_y = self.y + constants.PLAYER
-            else:
-                target_x = self.x
-                target_y = self.y
-            
-            world.add_farmland(target_x, target_y)
-            return True
-
-        # ===== COSECHAR =====
-        if keys[pygame.K_SPACE]:
-        # Determinar dirección de interacción
-            if self.current_state in [constants.IDLE_RIGHT, constants.WALK_RIGHT]:
-                target_x = self.x + constants.PLAYER if not self.facing_left else self.x - constants.PLAYER
-                target_y = self.y
-            elif self.current_state in [constants.IDLE_UP, constants.WALK_UP]:
-                target_x = self.x
-                target_y = self.y - constants.PLAYER
-            elif self.current_state in [constants.IDLE_DOWN, constants.WALK_DOWN]:
+            elif self.current_state in [IDLE_DOWN, WALK_DOWN]:
                 target_x = self.x
                 target_y = self.y + constants.PLAYER
             else: # Default to current position if no specific direction.
@@ -425,40 +361,21 @@ class Character:
                 target_x = self.x
                 target_y = self.y
                 
-<<<<<<< HEAD
             world.add_farmland(target_x, target_y)
             return
         
         # Iterate through active chunks to check for interactable objects.
         # Iterar a través de los "chunks" activos para buscar objetos interactuables.
-=======
-            grid_x = (target_x // constants.GRASS) * constants.GRASS
-            grid_y = (target_y // constants.GRASS) * constants.GRASS
-            
-            chunk_key = world.get_chunk_key(grid_x, grid_y)
-            if chunk_key in world.active_chunks:
-                chunk = world.active_chunks[chunk_key]
-                tile_key = (grid_x, grid_y)
-                
-                if tile_key in chunk.farmland_tiles:
-                    farmland = chunk.farmland_tiles[tile_key]
-                    if farmland.harvest():
-                        self.inventory.add_item('carrot')
-                        return True
-
-
-        # ===== INTERACCIÓN CON OTROS OBJETOS =====
->>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1
         for chunk in world.active_chunks.values():
             # Trees.
             # Árboles.
             for tree in chunk.trees[:]:
                 if self.is_near(tree):
-                    if self.inventory.has_axe_equipped():
+                    has_axe = self.inventory.has_axe_equipped()
+                    if has_axe:
                         self.is_chopping = True
                         self.chop_timer = pygame.time.get_ticks()
                         self.chop_frame = 0
-<<<<<<< HEAD
                     if tree.chop(): # Attempt to chop the tree.
                                     # Intentar talar el árbol.
                         self.inventory.add_item('wood')
@@ -487,14 +404,6 @@ class Character:
                     if rose_yellow.rose_yellow == 0:
                         chunk.Roses_Yellow.remove(rose_yellow)
                     return
-=======
-                    
-                    if tree.chop():
-                        self.inventory.add_item('wood')
-                        if tree.wood == 0:
-                            chunk.trees.remove(tree)
-                    return True
->>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1
 
             # Stones.
             # Piedras.
@@ -503,34 +412,12 @@ class Character:
                     if stone.mine(): # Attempt to mine the stone.
                                      # Intentar minar la piedra.
                         self.inventory.add_item('stone')
-<<<<<<< HEAD
                     if stone.stone == 0:
                         chunk.small_stones.remove(stone)
                     return
 
     # Draw the character's inventory on the screen.
     # Dibuja el inventario del personaje en la pantalla.
-=======
-                        if stone.stone == 0:
-                            chunk.small_stones.remove(stone)
-                    return True
-
-            # Flores/Rosas
-            for collectible in [*chunk.flowers, *chunk.Roses, *chunk.Roses_Yellow]:
-                if self.is_near(collectible):
-                    if hasattr(collectible, 'collect') and collectible.collect():
-                        item_name = {
-                            'Rose': 'rose',
-                            'RoseYellow': 'rose_yellow',
-                            'Flower': 'flower'
-                        }.get(collectible.__class__.__name__, 'flower')
-                        self.inventory.add_item(item_name)
-                        return True
-
-        return False
-    #Draw the inventory on the screen   
-    #Dibuja el inventario en la pantalla
->>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1
     def draw_inventory(self, screen, show_inventory=False):
         self.inventory.draw(screen, 0, 0, show_inventory)
 
