@@ -44,7 +44,7 @@ def main():
                     show_inventory = not show_inventory
                     if not show_inventory:
                         character.inventory.clear_crafting_grid()
-                elif event.key == pygame.K_p:  # Tecla P para interactuar con agua/cubeta
+                elif event.key == pygame.K_q:  # Tecla P para interactuar con agua/cubeta
                     character.interact(world)
                 elif event.key == pygame.K_c:
                     show_coordinates = not show_coordinates
@@ -94,7 +94,8 @@ def main():
         camera_y = character.y - constants.HEIGHT // 2
 
         world.update_chunks(character.x, character.y)
-
+        
+        world.update(dt)
         # Update the world time
         #Actualiza el tiempo del mundo
         world.update_time(dt)

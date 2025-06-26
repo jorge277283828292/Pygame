@@ -108,20 +108,80 @@ class Grass3(GameElement):
 
 class FarmLand:
     def __init__(self, x, y):
-        self.x = x  
+        self.x = x
         self.y = y
-        farmland_path = os.path.join('assets', 'images', 'objects', 'FarmLand.png')
-        self.image = pygame.image.load(farmland_path).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (constants.GRASS, constants.GRASS))
-        self.size = self.image.get_width()
+        self.is_watered = False
+        self.growth_stage = 0  # 0 = tierra arada, 5 = listo para cosechar
+        self.last_update_time = pygame.time.get_ticks()
+        self.size = constants.GRASS
+        self.images = self._load_images()
+
+    def _load_images(self):
+        images = {}
+        for i in range(1, 7):
+            try:
+                path = os.path.join('assets', 'images', 'objects', 'Farm', f'Farmland {i}.png')
+                img = pygame.image.load(path).convert_alpha()
+                images[i] = pygame.transform.scale(img, (self.size, self.size))
+            except:
+                # Crear imagen de placeholder si no existe
+                surf = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
+                color = (139, 69, 19) if i == 1 else (0, 100 + i*20, 0)
+                surf.fill(color)
+                images[i] = surf
+        return images
+
+    def water(self):
+        if not self.is_watered:
+            self.is_watered = True
+            self.last_update_time = pygame.time.get_ticks()
+            return True
+        return False
+
+    def update(self, current_time):
+        if self.is_watered and self.growth_stage < 5:
+            if current_time - self.last_update_time > constants.FARM_GROWTH_TIME:
+                self.growth_stage += 1
+                self.last_update_time = current_time
+                # El agua se evapora después del último crecimiento
+                if self.growth_stage >= 5:
+                    self.is_watered = False
+
+    def harvest(self):
+        if self.growth_stage == 5:
+            self.growth_stage = 0
+            self.is_watered = False
+            return True
+        return False
 
     def draw(self, screen, camera_x, camera_y):
         screen_x = self.x - camera_x
         screen_y = self.y - camera_y
+        
+        # Dibujar la etapa actual
+        image_key = min(6, max(1, self.growth_stage + 1))
+        screen.blit(self.images[image_key], (screen_x, screen_y))
+        
+    def water(self):
+        if not self.is_watered:
+            self.is_watered = True
+            self.last_update_time= pygame.time.get_ticks()
+            return True
+        
+    def update(self, current_time):
+        if self.is_watered and self.growth_stage < 5:
+            if self.growth_stage == 0:
+                self.growth_stage = 1   
+            if current_time - self.last_update_time > 10000:
+                self.growth_stage = min(5, self.growth_stage + 1)
+                self.last_update_time = current_time
 
-        if(screen_x + self.size >= 0 and screen_x <= constants.WIDTH and
-                screen_y + self.size >= 0 and screen_y <= constants.HEIGHT):
-            screen.blit(self.image, (screen_x, screen_y))
+    def harvest(self):
+        if self.growth_stage >= 5:
+            self.growth_stage= 0
+            self.is_watered = False
+            return True
+        return False
 
 class Water:
     def __init__(self, x, y):

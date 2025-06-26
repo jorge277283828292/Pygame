@@ -34,7 +34,8 @@ class Inventory:
             'stick': os.path.join('assets', 'images', 'objects', 'stick_stone.png'),
             'hoe': os.path.join('assets', 'images', 'objects', 'hoe.png'),
             'bucket':  os.path.join('assets', 'images', 'objects', 'bucket.png'),
-            'water_bucket': os.path.join('assets', 'images', 'objects', 'full_bucket.png')
+            'water_bucket': os.path.join('assets', 'images', 'objects', 'full_bucket.png'),
+            'carrot': os.path.join('assets', 'images', 'objects', 'carrot.png')
         }
 
         self.recipes = {
