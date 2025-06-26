@@ -734,6 +734,7 @@ class World:
         # Normaliza las coordenadas a la cuadrícula de tiles
         grid_x = (x // constants.GRASS) * constants.GRASS
         grid_y = (y // constants.GRASS) * constants.GRASS
+<<<<<<< HEAD
     
         # Get the chunk to which the position belongs
         # Obtiene el chunk al que pertenece la posición
@@ -769,6 +770,48 @@ class World:
         return False # The chunk is not active or some other condition is not met
         # El chunk no está activo o alguna otra condición no se cumple
     
+=======
+        
+        chunk_key = self.get_chunk_key(grid_x, grid_y)
+        if chunk_key not in self.active_chunks:
+            return False
+            
+        chunk = self.active_chunks[chunk_key]
+        tile_key = (grid_x, grid_y)
+        
+        # Verificar que no haya agua u obstáculos
+        if (tile_key in chunk.water_tiles or 
+            any(obj for obj in [*chunk.trees, *chunk.small_stones] 
+                if pygame.Rect(obj.x, obj.y, obj.size, obj.size).colliderect(
+                    pygame.Rect(grid_x, grid_y, constants.GRASS, constants.GRASS)))):
+            return False
+        
+        # Si no existe farmland, crearlo
+        if tile_key not in chunk.farmland_tiles:
+            try:
+                # Verificar que existan los assets
+                for i in range(1, 7):
+                    path = os.path.join('assets', 'images', 'objects', 'Farm', f'Farmland {i}.png')
+                    if not os.path.exists(path):
+                        print(f"Error: Falta archivo {path}")
+                        return False
+                
+                chunk.farmland_tiles[tile_key] = FarmLand(grid_x, grid_y)
+                
+                # Eliminar hierbas decorativas
+                for grass_list in [chunk.grasses1, chunk.grasses2, chunk.grasses3]:
+                    chunk.grasses[:] = [g for g in grass_list 
+                                    if not (grid_x <= g.x < grid_x + constants.GRASS and 
+                                            grid_y <= g.y < grid_y + constants.GRASS)]
+                return True
+                
+            except Exception as e:
+                print(f"Error al crear farmland: {e}")
+                return False
+                
+        return False
+        
+>>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1
     def is_water_at(self, x, y):
         # Get the chunk to which the position belongs
         # Obtiene el chunk al que pertenece la posición
@@ -786,5 +829,29 @@ class World:
             # Retorna True si hay agua en la posición, False en caso contrario
             return tile_key in chunk.water_tiles
 
+<<<<<<< HEAD
         return False # No water if the chunk is not active
         # No hay agua si el chunk no está activo
+=======
+        return False
+
+                
+    def get_farmland_at(self, x, y):
+        chunk_key = self.get_chunk_key(x, y)
+        chunk = self.active_chunks.get(chunk_key)
+
+        if chunk:
+            grid_x = (x // constants.GRASS) * constants.GRASS
+            grid_y = (y // constants.GRASS) * constants.GRASS
+
+            tile_key = (grid_x, grid_y)
+            return chunk.farmland_tiles_get(tile_key)
+        return None
+    
+    def update(self, dt):
+        current_time = pygame.time.get_ticks()
+        
+        for chunk in self.active_chunks.values():
+            for farmland in chunk.farmland_tiles.values():
+                farmland.update(current_time)
+>>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1

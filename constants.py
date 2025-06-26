@@ -135,6 +135,7 @@ HOE_COLS = 3  # Number of columns in the hoe animation sprite sheet / Número de
 HOE_FRAMES = 3  # Total frames for hoe animation / Frames totales para la animación de la azada
 HOE_ANIMATION_DELAY = 400  # Delay between hoe animation frames / Retraso entre frames de animación de la azada
 
+<<<<<<< HEAD
 # Water
 # Agua
 WATER_COLOR = (0, 191, 255)  # Color of water / Color del agua
@@ -144,3 +145,14 @@ WATER_THIRST_RECOVERY = 20  # Amount of thirst recovered by drinking water / Can
 WATER_BUFFER_ZONE = 64  # Buffer zone around water for certain interactions / Zona de amortiguación alrededor del agua para ciertas interacciones
 
 FARM_GROWTH_TIME = 10000  # Time in milliseconds for farm crops to grow one stage / Tiempo en milisegundos para que los cultivos de la granja crezcan una etapa
+=======
+#Water
+#Agua
+WATER_COLOR = (0, 191, 255)
+WATER_MOVE_MULTIPLIER = 0.5
+WATER_GENERATION_PROBABILITY = 0.3
+WATER_THIRST_RECOVERY = 20
+WATER_BUFFER_ZONE = 64
+
+FARM_GROWTH_TIME = 10000
+>>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1

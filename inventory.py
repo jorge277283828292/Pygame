@@ -46,8 +46,14 @@ class Inventory:
             'bunch': os.path.join('assets', 'images', 'objects', 'bunch.png'),
             'stick': os.path.join('assets', 'images', 'objects', 'stick_stone.png'),
             'hoe': os.path.join('assets', 'images', 'objects', 'hoe.png'),
+<<<<<<< HEAD
             'bucket': os.path.join('assets', 'images', 'objects', 'bucket.png'),
             'water_bucket': os.path.join('assets', 'images', 'objects', 'full_bucket.png')
+=======
+            'bucket':  os.path.join('assets', 'images', 'objects', 'bucket.png'),
+            'water_bucket': os.path.join('assets', 'images', 'objects', 'full_bucket.png'),
+            'carrot': os.path.join('assets', 'images', 'objects', 'carrot.png')
+>>>>>>> 445b9609fa25c8f7d733ffc43bcba7446262cfc1
         }
 
         # Dictionary defining crafting recipes
